@@ -34,7 +34,6 @@ from api.views import (
     update_worker_details,
     assign_worker_to_job,
     delete_worker_profile,
-    dashboard_stats,
     dashboard_activity,
     # Import new worker job endpoints
     worker_jobs,
@@ -61,7 +60,33 @@ from api.views import (
     worker_contractors,
     # Import contractor workers view
     contractor_workers,
+    # Import face recognition views
+    index,
+    dashboard as face_dashboard,
+    signup,
+    user_login,
+    user_logout,
+    student_update,
+    student_delete,
+    face_capture_page,
+    start_face_capture,
+    capture_status,
+    stop_face_capture,
+    train_model,
+    video_feed,
+    start_attendance_camera,
+    attendance_video_feed,
+    attendance_status,
+    stop_attendance_camera,
+    face_dashboard_stats,
+    crowd_report,
+    unknown_faces,
+    student_dashboard,
+    class_attendance_history,
 )
+
+# Import the original dashboard_stats separately to avoid conflict
+
 
 # Import the contractor dashboard specific views
 from api.contractor_views import (
@@ -94,6 +119,32 @@ from api import student_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # Face Recognition and Attendance URLs (from AttendanceSystem)
+    path('', index, name='index'),
+    path('attendance-dashboard/', face_dashboard, name='face_dashboard'),
+    path('student-dashboard/', student_dashboard, name='student_dashboard'),
+    path('signup/', signup, name='signup'),
+    path('login/', user_login, name='user_login'),
+    path('logout/', user_logout, name='logout'),
+    path('students/<int:pk>/update/', student_update, name='student_update'),
+    path('students/<int:pk>/delete/', student_delete, name='student_delete'),
+    path('face-capture/', face_capture_page, name='face_capture'),
+    path('api/start-capture/', start_face_capture, name='start_capture'),
+    path('api/stop-capture/', stop_face_capture, name='stop_capture'),
+    path('api/capture-status/<str:student_id>/', capture_status, name='capture_status'),
+    path('api/train-model/', train_model, name='train_model'),
+    path('api/video-feed/<str:student_id>/', video_feed, name='video_feed'),
+    path('api/attendance/start/', start_attendance_camera, name='start_attendance'),
+    path('api/attendance/stop/', stop_attendance_camera, name='stop_attendance'),
+    path('api/attendance/status/<str:session_id>/', attendance_status, name='attendance_status'),
+    path('api/attendance/video-feed/<str:session_id>/', attendance_video_feed, name='attendance_video_feed'),
+    path('api/face-dashboard/stats/', face_dashboard_stats, name='face_dashboard_stats'),
+    path('api/crowd-report/', crowd_report, name='crowd_report'),
+    path('api/unknown-faces/', unknown_faces, name='unknown_faces'),
+    path('api/class-history/', class_attendance_history, name='class_history'),
+    
+    # Existing AttendanceTracker API URLs
     path('api/register/', register_user, name='register'),
     path('api/register/worker/', register_worker_api, name='register_worker'),
     path('api/register/contractor/', register_contractor_api, name='register_contractor'),
@@ -128,7 +179,7 @@ urlpatterns = [
     path('api/students/reject/<int:pk>/', student_views.reject_student, name='reject_student'),
     
     # Dashboard URL
-    path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),  # New URL for dashboard statistics
+    # path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),  # New URL for dashboard statistics
     path('api/dashboard/activity/', dashboard_activity, name='dashboard_activity'),  # New URL for dashboard activity
     # Job URLs
     path('api/contractors/list/', get_contractors, name='get_contractors'),    

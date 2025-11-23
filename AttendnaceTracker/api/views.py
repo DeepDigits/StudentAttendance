@@ -11,6 +11,17 @@ from datetime import datetime
 from .models import * # Make sure WorkerProfile is imported
 from .models import WorkerFeedback, ContractorFeedback
 
+# Import all face recognition views
+from .face_recognition_views import (
+    index, dashboard, signup, user_login, user_logout,
+    student_update, student_delete, face_capture_page,
+    start_face_capture, capture_status, stop_face_capture,
+    train_model, video_feed, start_attendance_camera,
+    attendance_video_feed, attendance_status, stop_attendance_camera,
+    dashboard_stats as face_dashboard_stats, crowd_report, unknown_faces,
+    student_dashboard, class_attendance_history
+)
+
 def get_csrf_token(request):
     """
     Returns the CSRF token for the current session.

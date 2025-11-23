@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CampusTrack - Smart College Attendance System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        purple: {
+                            50: '#faf5ff',
+                            100: '#f3e8ff',
+                            200: '#e9d5ff',
+                            300: '#d8b4fe',
+                            400: '#c084fc',
+                            500: '#a855f7',
+                            600: '#9333ea',
+                            700: '#7c3aed',
+                            800: '#6b21a8',
+                            900: '#581c87',
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 30px -5px rgba(168, 85, 247, 0.15)',
+                        'soft-lg': '0 15px 40px -10px rgba(168, 85, 247, 0.2)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            color-scheme: light;
+        }
+        
+        /* Custom animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(168, 85, 247, 0.25);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6b21a8 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Banner - clean white background */
+        .banner-bg {
+            background: white;
+            position: relative;
+        }
+        
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        
+        .floating-shapes .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-shapes .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .floating-shapes .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 80%;
+            animation-delay: 2s;
+        }
+        
+        .floating-shapes .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 40%;
+            left: 85%;
+            animation-delay: 4s;
+        }
+        
+        .floating-shapes .shape:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 15%;
+            animation-delay: 1s;
+        }
+        
+        .floating-shapes .shape:nth-child(5) {
+            width: 70px;
+            height: 70px;
+            top: 15%;
+            left: 70%;
+            animation-delay: 3s;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #a855f7;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7c3aed;
+        }
+        
+        /* Feature grid — card style inspired by attachment */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 18px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: #fff;
+            border: 1px solid #e6e9ee;
+            border-radius: 14px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            position: relative;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.04);
+            opacity: 0;
+            transform: translateY(12px);
+            animation: featureIn 0.5s ease-out forwards;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0s; }
+        .feature-card:nth-child(2) { animation-delay: 0.08s; }
+        .feature-card:nth-child(3) { animation-delay: 0.16s; }
+        .feature-card:nth-child(4) { animation-delay: 0.24s; }
+
+        @keyframes featureIn { to { opacity: 1; transform: translateY(0); } }
+
+        .feature-card:hover { transform: translateY(-6px); box-shadow: 0 14px 36px rgba(15,23,42,0.08); }
+
+        /* icon container styled as rounded square to match attachment */
+        .feature-card i {
+            display: inline-flex;
+            width: 48px;
+            height: 48px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: #f3f4f6;
+            color: #475569;
+            font-size: 22px;
+            margin: 0 auto 16px auto;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            color: #0f172a;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0 auto;
+            max-width: 12rem;
+            line-height: 1.5;
+        }
+
+        /* About section specific tweaks */
+        @media (max-width: 768px) {
+            #about h2 { font-size: 1.75rem; }
+        }
+
+        .blur-3xl { filter: blur(28px); }
+        .shadow-soft-lg { box-shadow: 0 18px 50px -20px rgba(99, 102, 241, 0.18); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <header class="sticky top-0 z-50 backdrop-blur bg-slate-50/90 border-b border-slate-200 shadow-soft">
+        <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <a class="flex items-center space-x-2" href="#">
+                <span class="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 text-white font-semibold">
+                    <i class="fas fa-graduation-cap"></i>
+                </span>
+                <span class="text-lg font-semibold tracking-wide text-purple-800">CampusTrack</span>
+            </a>
+            <ul class="hidden md:flex items-center space-x-8 text-sm font-medium">
+                <li><a class="hover:text-purple-600 transition flex items-center space-x-2" href="#overview"><i class="fas fa-home text-sm"></i><span>Overview</span></a></li>
+                <li><a class="hover:text-purple-600 transition flex items-center space-x-2" href="#features"><i class="fas fa-list text-sm"></i><span>Features</span></a></li>
+                <li><a class="hover:text-purple-600 transition flex items-center space-x-2" href="#analytics"><i class="fas fa-chart-line text-sm"></i><span>Analytics</span></a></li>
+                <li><a class="hover:text-purple-600 transition flex items-center space-x-2" href="#pricing"><i class="fas fa-box text-sm"></i><span>Solutions</span></a></li>
+            </ul>
+            <div class="hidden md:flex items-center space-x-4">
+                {% if user.is_authenticated and request.user.is_superuser %}
+                    <a href="{% url 'face_dashboard' %}" class="px-4 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/40 hover:shadow-lg hover:shadow-purple-500/30 transition hover-lift flex items-center space-x-2">
+                        <i class="fas fa-chart-line"></i><span>Dashboard</span>
+                    </a>
+                    <form method="post" action="{% url 'logout' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="px-4 py-2 text-sm font-semibold rounded-full bg-red-600 text-white hover:bg-red-700 transition flex items-center space-x-2"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+                    </form>
+                {% else %}
+                    <button data-open-modal="login" class="px-3 py-2 text-sm font-semibold text-purple-600/90 hover:text-purple-700 flex items-center space-x-2"><i class="fas fa-sign-in-alt"></i><span>Login</span></button>
+                    <button data-open-modal="signup" class="px-4 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/40 hover:shadow-lg hover:shadow-purple-500/30 transition hover-lift flex items-center space-x-2"><i class="fas fa-user-plus"></i><span>Signup</span></button>
+                {% endif %}
+            </div>
+            <button class="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-xl bg-white shadow-sm border border-slate-200">
+                <span class="sr-only">Open navigation</span>
+                <svg class="h-5 w-5 text-slate-700" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="overview" class="banner-bg relative py-16 lg:py-24 text-slate-900">
+            <!-- Particles background (tsParticles) -->
+            <div id="particles-js" style="position:absolute;inset:0;z-index:0;pointer-events:auto;"></div>
+            
+            <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center" style="z-index:2;">
+                <div class="space-y-6 animate-fadeInUp">
+                    <span class="inline-flex items-center space-x-2 bg-purple-100 text-purple-800 rounded-full px-4 py-2 text-sm font-medium">
+                        <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+                        <span>Smart Campus Solution</span>
+                    </span>
+                    <h1 class="text-4xl sm:text-5xl font-bold leading-tight">Transform Campus Management with <span class="text-purple-600">AI-Powered</span> Attendance</h1>
+                    <p class="text-lg text-slate-600">An intelligent system using face recognition and occupancy tracking to automate attendance, optimize classroom usage, and provide real-time alerts for efficient campus operations.</p>
+                    <div class="flex flex-wrap gap-4">
+                        <a class="px-6 py-3 rounded-full bg-white text-purple-600 font-semibold shadow-md shadow-purple-500/30 hover:shadow-lg hover:-translate-y-1 transition hover-lift" href="#features">Explore Features</a>
+                        <a class="px-6 py-3 rounded-full bg-purple-600 text-white font-semibold hover:bg-purple-700 transition" href="#analytics">View Analytics</a>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 pt-6">
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-slate-900">99.2%</p>
+                            <p class="text-sm text-slate-600">Accuracy</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-slate-900">500+</p>
+                            <p class="text-sm text-slate-600">Institutions</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-slate-900">24/7</p>
+                            <p class="text-sm text-slate-600">Support</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative animate-fadeInUp" style="animation-delay: 0.2s;">
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <i class="fas fa-user-check" style="background: linear-gradient(90deg,#7c3aed,#a855f7); color:white;"></i>
+                            <h3>Attendance</h3>
+                            <p>AI-powered face recognition for seamless check-ins.</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-chart-bar" style="background: linear-gradient(90deg,#ff7a18,#ffb86b); color:white;"></i>
+                            <h3>Live Analytics</h3>
+                            <p>Real-time data insights and classroom utilization.</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-bell" style="background: linear-gradient(90deg,#06b6d4,#3b82f6); color:white;"></i>
+                            <h3>Smart Alerts</h3>
+                            <p>Instant notifications for safety and capacity issues.</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-mobile-alt" style="background: linear-gradient(90deg,#8b5cf6,#a78bfa); color:white;"></i>
+                            <h3>Mobile Access</h3>
+                            <p>Manage everything on-the-go with our app.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About section removed as requested -->
+
+        <!-- Features Section -->
+        <section id="features" class="bg-purple-50 py-16">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <span class="inline-block px-4 py-2 rounded-full bg-white text-purple-600 text-sm font-semibold shadow-soft">Key Features</span>
+                    <h2 class="text-3xl font-bold mt-4 mb-4 text-slate-900">Everything You Need for Smart Campus Management</h2>
+                    <p class="max-w-2xl mx-auto text-slate-600">Our comprehensive platform combines cutting-edge technology with user-friendly interfaces to transform how you manage attendance and classroom utilization.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="rounded-2xl bg-white p-6 shadow-soft border border-purple-100 hover-lift">
+                        <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white mb-4">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Automated Attendance</h3>
+                        <p class="text-slate-600">Seamless, contactless attendance using AI-powered face recognition. Eliminates manual processes and reduces errors.</p>
+                    </div>
+                    <div class="rounded-2xl bg-white p-6 shadow-soft border border-purple-100 hover-lift">
+                        <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-purple-700 text-white mb-4">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Live Occupancy Tracking</h3>
+                        <p class="text-slate-600">Monitor the number of students in a classroom in real time and prevent overcrowding for safety compliance.</p>
+                    </div>
+                    <div class="rounded-2xl bg-white p-6 shadow-soft border border-purple-100 hover-lift">
+                        <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-500 text-white mb-4">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Smart Alerts</h3>
+                        <p class="text-slate-600">Instant notifications for seat shortages, overcapacity, and safety compliance issues.</p>
+                    </div>
+                </div>
+                
+                <!-- Second row of features -->
+                <div class="grid md:grid-cols-3 gap-8 mt-8">
+                    <div class="rounded-2xl bg-white p-6 shadow-soft border border-purple-100 hover-lift">
+                        <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white mb-4">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Analytics Dashboard</h3>
+                        <p class="text-slate-600">Comprehensive reports and insights on attendance patterns, classroom utilization, and student engagement.</p>
+                    </div>
+                    <div class="rounded-2xl bg-white p-6 shadow-soft border border-purple-100 hover-lift">
+                        <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-400 to-indigo-500 text-white mb-4">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Mobile Integration</h3>
+                        <p class="text-slate-600">Access the system on-the-go with our mobile app for faculty and administrators.</p>
+                    </div>
+                    <div class="rounded-2xl bg-white p-6 shadow-soft border border-purple-100 hover-lift">
+                        <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 text-white mb-4">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Secure Data Storage</h3>
+                        <p class="text-slate-600">All attendance and occupancy data is securely stored with role-based access control.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits Section -->
+        <section id="benefits" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="grid md:grid-cols-2 gap-10 items-center">
+                <div class="flex justify-center order-2 md:order-1 animate-fadeInUp">
+                    <div class="relative">
+                        <div class="absolute -inset-4 bg-gradient-to-r from-purple-400 to-purple-600 rounded-2xl blur-lg opacity-30"></div>
+                        <img src="https://images.unsplash.com/photo-1588072432836-e10032774350?q=80&w=600&auto=format&fit=crop" alt="Safe campus" class="relative rounded-2xl shadow-soft-lg w-full max-w-md hover-lift">
+                    </div>
+                </div>
+                <div class="order-1 md:order-2 animate-fadeInUp" style="animation-delay: 0.2s;">
+                    <h2 class="text-3xl font-bold mb-4 text-slate-900">Why Choose CampusTrack?</h2>
+                    <ul class="space-y-3 text-slate-700">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-purple-500 mt-1 mr-3"></i>
+                            <span>Enhances safety and compliance in educational spaces</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-purple-500 mt-1 mr-3"></i>
+                            <span>Reduces manual work and administrative overhead</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-purple-500 mt-1 mr-3"></i>
+                            <span>Provides actionable insights for campus administrators</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-purple-500 mt-1 mr-3"></i>
+                            <span>Scalable for classrooms, lecture halls, and campus events</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-purple-500 mt-1 mr-3"></i>
+                            <span>Improves resource allocation and classroom utilization</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-purple-500 mt-1 mr-3"></i>
+                            <span>Ensures accurate records for compliance and accreditation</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="bg-white py-16">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-3 gap-10 items-center">
+                <div class="space-y-5 animate-fadeInUp">
+                    <span class="inline-block px-4 py-2 rounded-full bg-purple-100 text-purple-600 text-sm font-semibold shadow-soft">Data-Driven Insights</span>
+                    <h2 class="text-3xl sm:text-4xl font-semibold text-slate-900">Track Campus Activity with Interactive Dashboards</h2>
+                    <p class="text-slate-500">Visualize attendance patterns, identify trends, and optimize classroom usage with our comprehensive analytics platform.</p>
+                    <ul class="space-y-3 text-sm text-slate-600">
+                        <li class="flex items-start space-x-3">
+                            <span class="mt-1 h-6 w-6 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 font-semibold">1</span>
+                            <span>Real-time attendance tracking with detailed reports for faculty and administration.</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="mt-1 h-6 w-6 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 font-semibold">2</span>
+                            <span>Classroom utilization analytics to optimize space allocation across campus.</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="mt-1 h-6 w-6 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 font-semibold">3</span>
+                            <span>Automated alerts for attendance anomalies and capacity thresholds.</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="lg:col-span-2 grid md:grid-cols-2 gap-6">
+                    <div class="rounded-3xl bg-gradient-to-br from-purple-600 to-purple-700 text-white p-6 space-y-6 shadow-soft-lg hover-lift">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-semibold text-white/70">Weekly Summary</p>
+                            <span class="text-xs bg-white/10 px-3 py-1 rounded-full">Last 7 days</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-semibold">Classes Monitored</p>
+                                <span class="text-2xl font-semibold">42</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-semibold">Attendance Records</p>
+                                <span class="text-2xl font-semibold">1,248</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-semibold">Avg. Attendance Rate</p>
+                                <span class="text-2xl font-semibold">87%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-white/70 mb-2">System Accuracy</p>
+                            <div class="h-2 w-full rounded-full bg-white/20">
+                                <div class="h-2 rounded-full bg-white" style="width: 94%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rounded-3xl bg-white border border-purple-100 p-6 shadow-soft-lg space-y-6 hover-lift">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-semibold text-slate-500">Classroom Utilization</p>
+                            <span class="text-xs text-slate-400">Week vs. Week</span>
+                        </div>
+                        <div class="grid grid-cols-5 gap-3 text-sm">
+                            <div class="text-center space-y-2">
+                                <div class="h-32 rounded-3xl bg-gradient-to-t from-purple-200 to-purple-500 flex items-end justify-center">
+                                    <span class="text-white font-semibold mb-2 text-xs">82%</span>
+                                </div>
+                                <p class="text-slate-500">Lecture Hall A</p>
+                            </div>
+                            <div class="text-center space-y-2">
+                                <div class="h-32 rounded-3xl bg-gradient-to-t from-purple-200 to-purple-500 flex items-end justify-center">
+                                    <span class="text-white font-semibold mb-2 text-xs">65%</span>
+                                </div>
+                                <p class="text-slate-500">Lab 3B</p>
+                            </div>
+                            <div class="text-center space-y-2">
+                                <div class="h-32 rounded-3xl bg-gradient-to-t from-purple-200 to-purple-500 flex items-end justify-center">
+                                    <span class="text-white font-semibold mb-2 text-xs">91%</span>
+                                </div>
+                                <p class="text-slate-500">Room 204</p>
+                            </div>
+                            <div class="text-center space-y-2">
+                                <div class="h-32 rounded-3xl bg-gradient-to-t from-purple-300 to-purple-600 flex items-end justify-center">
+                                    <span class="text-white font-semibold mb-2 text-xs">78%</span>
+                                </div>
+                                <p class="text-slate-500">Seminar 1</p>
+                            </div>
+                            <div class="text-center space-y-2">
+                                <div class="h-32 rounded-3xl bg-gradient-to-t from-purple-400 to-purple-700 flex items-end justify-center">
+                                    <span class="text-white font-semibold mb-2 text-xs">88%</span>
+                                </div>
+                                <p class="text-slate-500">Auditorium</p>
+                            </div>
+                        </div>
+                        <div class="rounded-2xl bg-purple-50 border border-purple-100 p-4">
+                            <p class="text-sm font-semibold text-purple-600">System Insight</p>
+                            <p class="text-sm text-slate-500 mt-1">Lab 3B shows low utilization. Consider rescheduling or repurposing this space.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="bg-purple-50 py-16">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <span class="inline-block px-4 py-2 rounded-full bg-white text-purple-600 text-sm font-semibold shadow-soft">How It Works</span>
+                    <h2 class="text-3xl font-bold mt-4 mb-4 text-slate-900">Simple Implementation, Powerful Results</h2>
+                    <p class="max-w-2xl mx-auto text-slate-600">Our system is designed for easy integration with your existing campus infrastructure.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center space-y-4">
+                        <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white text-xl font-bold shadow-soft">1</div>
+                        <h3 class="text-xl font-semibold">Setup & Integration</h3>
+                        <p class="text-slate-600">Install cameras in classrooms and integrate with your existing campus systems.</p>
+                    </div>
+                    <div class="text-center space-y-4">
+                        <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white text-xl font-bold shadow-soft">2</div>
+                        <h3 class="text-xl font-semibold">AI Recognition</h3>
+                        <p class="text-slate-600">Our system automatically detects and recognizes students as they enter classrooms.</p>
+                    </div>
+                    <div class="text-center space-y-4">
+                        <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white text-xl font-bold shadow-soft">3</div>
+                        <h3 class="text-xl font-semibold">Data & Analytics</h3>
+                        <p class="text-slate-600">Access real-time attendance data and comprehensive analytics through the dashboard.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Integrations & Partners Section (replaces Pricing) -->
+        <section id="pricing" class="bg-white py-16">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+                <div class="text-center space-y-4">
+                    <span class="inline-block px-4 py-2 rounded-full bg-purple-100 text-purple-600 text-sm font-semibold shadow-soft">Integrations</span>
+                    <h2 class="text-3xl sm:text-4xl font-semibold text-slate-900">Integrate with Your Campus Systems</h2>
+                    <p class="max-w-2xl mx-auto text-slate-500">CampusTrack connects to popular campus systems — LMS, SIS, identity providers, and cloud platforms — so data flows where you need it.</p>
+                </div>
+                <div class="space-y-6">
+                    <!-- Feature chips: Attendance, Crowd Detection, Study Materials Upload -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <span class="inline-flex items-center gap-2 rounded-full bg-purple-50 text-purple-700 px-4 py-2 text-sm font-semibold shadow-sm">
+                            <i class="fas fa-user-check"></i>
+                            Attendance
+                        </span>
+                        <span class="inline-flex items-center gap-2 rounded-full bg-purple-50 text-purple-700 px-4 py-2 text-sm font-semibold shadow-sm">
+                            <i class="fas fa-users"></i>
+                            Crowd Detection
+                        </span>
+                        <span class="inline-flex items-center gap-2 rounded-full bg-purple-50 text-purple-700 px-4 py-2 text-sm font-semibold shadow-sm">
+                            <i class="fas fa-folder-plus"></i>
+                            Study Materials Upload
+                        </span>
+                    </div>
+
+                    <div class="grid gap-6 md:grid-cols-3">
+                    <article class="relative rounded-3xl bg-white border border-purple-100 p-8 shadow-soft hover-lift">
+                        <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white text-lg font-bold shadow-soft">L</div>
+                        <p class="mt-4 text-xl font-semibold text-slate-900">Attendance (Face Recognition)</p>
+                        <p class="mt-2 text-sm text-slate-500">Capture and mark attendance automatically using live face recognition at classroom entry points.</p>
+                        <ul class="mt-6 space-y-3 text-sm text-slate-600">
+                            <li><i class="fas fa-check text-purple-500 mr-2"></i>Live face capture & matching</li>
+                            <li><i class="fas fa-check text-purple-500 mr-2"></i>Session logs and timestamps</li>
+                            <li><i class="fas fa-check text-purple-500 mr-2"></i>Exportable CSV and PDF reports</li>
+                        </ul>
+                        <a class="mt-8 inline-flex w-full justify-center rounded-full border border-purple-200 py-3 text-sm font-semibold text-purple-600 hover:bg-purple-50 transition" href="#">Learn more</a>
+                    </article>
+                    <article class="relative rounded-3xl bg-gradient-to-br from-purple-600 to-purple-700 text-white p-8 shadow-soft-lg hover-lift">
+                        <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-white text-purple-600 text-lg font-bold shadow-soft">S</div>
+                        <p class="mt-4 text-xl font-semibold">Crowd Detection</p>
+                        <p class="mt-2 text-sm text-white/80">Real-time occupancy and crowd analytics to monitor classroom and corridor density.</p>
+                        <ul class="mt-6 space-y-3 text-sm text-white/80">
+                            <li><i class="fas fa-check text-white mr-2"></i>Zone-based occupancy counts</li>
+                            <li><i class="fas fa-check text-white mr-2"></i>Overcrowding alerts and thresholds</li>
+                            <li><i class="fas fa-check text-white mr-2"></i>Heatmaps & usage trends</li>
+                        </ul>
+                        <a class="mt-8 inline-flex w-full justify-center rounded-full bg-white text-purple-600 py-3 text-sm font-semibold hover:bg-purple-50 transition" href="#">Learn more</a>
+                    </article>
+                    <article class="relative rounded-3xl bg-white border border-purple-100 p-8 shadow-soft hover-lift">
+                        <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-purple-600 text-white text-lg font-bold shadow-soft">C</div>
+                        <p class="mt-4 text-xl font-semibold text-slate-900">Study Materials</p>
+                        <p class="mt-2 text-sm text-slate-500">Upload and manage course materials — PDFs, slides and links — tied to sessions and courses.</p>
+                        <ul class="mt-6 space-y-3 text-sm text-slate-600">
+                            <li><i class="fas fa-check text-purple-500 mr-2"></i>Course-linked uploads</li>
+                            <li><i class="fas fa-check text-purple-500 mr-2"></i>Versioning and access controls</li>
+                            <li><i class="fas fa-check text-purple-500 mr-2"></i>Shareable download links</li>
+                        </ul>
+                        <a class="mt-8 inline-flex w-full justify-center rounded-full border border-purple-200 py-3 text-sm font-semibold text-purple-600 hover:bg-purple-50 transition" href="#">Learn more</a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section class="gradient-bg text-white">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center space-y-6">
+                <h2 class="text-3xl sm:text-4xl font-semibold">Trusted by Educational Institutions Worldwide</h2>
+                <p class="text-white/80 max-w-2xl mx-auto">"CampusTrack has revolutionized how we manage attendance and classroom utilization. The system's accuracy and ease of use have saved our administration countless hours."</p>
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-6">
+                    <div class="flex items-center space-x-4">
+                        <img class="h-16 w-16 rounded-full border-4 border-white/20" src="https://i.pravatar.cc/150?img=12" alt="Administrator avatar" />
+                        <div class="text-left">
+                            <p class="text-lg font-semibold">Dr. Michael Roberts</p>
+                            <p class="text-sm text-white/70">Dean of Students, University of Tech</p>
+                        </div>
+                    </div>
+                    <div class="flex -space-x-4">
+                        <img class="h-12 w-12 rounded-full border-4 border-white/20" src="https://i.pravatar.cc/150?img=32" alt="Institution logo" />
+                        <img class="h-12 w-12 rounded-full border-4 border-white/20" src="https://i.pravatar.cc/150?img=21" alt="Institution logo" />
+                        <img class="h-12 w-12 rounded-full border-4 border-white/20" src="https://i.pravatar.cc/150?img=14" alt="Institution logo" />
+                        <div class="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center text-sm font-semibold">+120</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Removed Getting Started / Resources section per user request -->
+    </main>
+
+    <footer class="bg-slate-900 text-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-4 gap-8 text-sm">
+            <div class="space-y-4">
+                <span class="inline-flex items-center space-x-2">
+                    <span class="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white font-semibold">
+                        <i class="fas fa-graduation-cap"></i>
+                    </span>
+                    <span class="text-lg font-semibold text-purple-300">CampusTrack</span>
+                </span>
+                <p class="text-white/70">Smart campus solutions for automated attendance, classroom management, and occupancy tracking.</p>
+            </div>
+            <div class="space-y-3">
+                <p class="text-white/80 font-semibold uppercase text-xs tracking-wider">Platform</p>
+                <ul class="space-y-2 text-white/60">
+                    <li><a class="hover:text-white" href="#features">Features</a></li>
+                    <li><a class="hover:text-white" href="#analytics">Analytics</a></li>
+                    <li><a class="hover:text-white" href="#pricing">Solutions</a></li>
+                    <li><a class="hover:text-white" href="#">Updates</a></li>
+                </ul>
+            </div>
+            <div class="space-y-3">
+                <p class="text-white/80 font-semibold uppercase text-xs tracking-wider">Resources</p>
+                <ul class="space-y-2 text-white/60">
+                    <li><a class="hover:text-white" href="#">Documentation</a></li>
+                    <li><a class="hover:text-white" href="#">Case Studies</a></li>
+                    <li><a class="hover:text-white" href="#">Blog</a></li>
+                    <li><a class="hover:text-white" href="#">Support</a></li>
+                </ul>
+            </div>
+            <div class="space-y-3">
+                <p class="text-white/80 font-semibold uppercase text-xs tracking-wider">Stay Updated</p>
+                <form class="space-y-3">
+                    <input class="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400" type="email" placeholder="you@example.com" />
+                    <button class="w-full rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 py-3 font-semibold hover:opacity-90 transition" type="submit">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="border-t border-white/10">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row justify-between text-xs text-white/50 space-y-3 sm:space-y-0">
+                <p>© 2025 CampusTrack. All rights reserved.</p>
+                <div class="flex space-x-4">
+                    <a class="hover:text-white" href="#">Terms</a>
+                    <a class="hover:text-white" href="#">Privacy</a>
+                    <a class="hover:text-white" href="#">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple animation on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-fadeInUp');
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe all sections
+            document.querySelectorAll('section').forEach(section => {
+                observer.observe(section);
+            });
+            
+            // Add smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+    <!-- tsParticles (replacement for particles.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+    <script>
+        window.addEventListener('load', function () {
+            if (window.tsParticles) {
+                tsParticles.load('particles-js', {
+                    fullScreen: { enable: false },
+                    detectRetina: true,
+                    fpsLimit: 60,
+                    particles: {
+                        number: { value: 70, density: { enable: true, area: 900 } },
+                        color: { value: '#8b5cf6' },
+                        shape: { type: 'circle' },
+                        opacity: { value: 0.18, random: { enable: true, minimumValue: 0.06 } },
+                        size: { value: { min: 2, max: 5 } },
+                        links: { enable: true, distance: 160, color: '#c084fc', opacity: 0.12, width: 1 },
+                        move: { enable: true, speed: 0.9, outModes: { default: 'out' } }
+                    },
+                    interactivity: {
+                        detectsOn: 'canvas',
+                        events: { onHover: { enable: true, mode: 'repulse' }, onClick: { enable: false } },
+                        modes: { repulse: { distance: 100, duration: 0.4 } }
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Modal markup for Login / Signup (purple-themed accents) -->
+    <div id="auth-modal" aria-hidden="true" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+        <div id="auth-overlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+    <div class="relative modal-card bg-white rounded-2xl shadow-soft-lg w-full max-w-lg mx-auto overflow-visible transition-transform duration-200 ease-out opacity-0 scale-95">
+            <button id="auth-close" class="absolute right-3 top-3 text-slate-500 hover:text-slate-700"><span class="sr-only">Close</span>&times;</button>
+            <div class="pt-6 p-6">
+                <div class="absolute -top-10 left-1/2 transform -translate-x-1/2">
+                    <div id="signup-avatar-container" class="h-20 w-20 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-lg border-4 border-white overflow-hidden" tabindex="0" role="button" aria-label="Choose profile picture">
+                        <img id="signup-avatar-preview" src="" alt="avatar preview" class="hidden h-full w-full object-cover">
+                        <!-- login fallback: normal user icon (shown in Login mode) -->
+                        <i id="login-avatar-fallback" class="fas fa-user fa-2x"></i>
+                        <!-- signup fallback: camera button (shown in Signup mode) -->
+                        <button id="signup-avatar-fallback" type="button" class="text-white text-2xl hidden" aria-label="Choose profile picture">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                        <!-- hidden file input moved into the avatar container -->
+                        <input type="file" id="signup-avatar" name="avatar" accept="image/*" class="hidden" />
+                    </div>
+                </div>
+                <div class="text-center mt-6">
+                    <h3 class="text-lg font-semibold text-slate-900">Welcome back</h3>
+                    <p class="text-sm text-slate-500">Sign in or create an account to continue</p>
+                </div>
+
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <button id="auth-login-btn" class="px-4 py-2 rounded-full text-sm font-semibold text-purple-700 bg-purple-50 shadow-sm" aria-pressed="true">Login</button>
+                    <button id="auth-signup-btn" class="px-4 py-2 rounded-full text-sm font-semibold text-purple-500 hover:bg-purple-50">Signup</button>
+                </div>
+
+                <div class="h-px bg-slate-100 my-3"></div>
+
+                <!-- Login form -->
+                <form id="auth-login" class="space-y-4">
+                    <input type="email" id="login-email" placeholder="Email" required class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    <input type="password" id="login-pass" placeholder="Password" required class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" /> <span>Remember me</span></label>
+                        <a href="#" class="text-sm text-purple-600">Forgot?</a>
+                    </div>
+                    <div class="pt-2">
+                        <button type="submit" class="w-full rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 font-semibold hover:opacity-95">Sign in</button>
+                    </div>
+                </form>
+
+                <!-- Signup form -->
+                <form id="auth-signup" class="space-y-4 hidden" enctype="multipart/form-data">
+                    <div class="grid grid-cols-2 gap-8">
+                        <div>
+                            <input type="text" id="signup-name" name="name" placeholder="Full name" required class="rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            <div id="err-name" class="text-sm text-red-600 hidden mt-1"></div>
+                        </div>
+                        <div>
+                            <input type="text" id="signup-username" name="username" placeholder="Username" required class="rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            <div id="err-username" class="text-sm text-red-600 hidden mt-1"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <input type="email" id="signup-email" name="email" placeholder="Email" required class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                        <div id="err-email" class="text-sm text-red-600 hidden mt-1"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-8">
+                        <div>
+                            <input type="tel" id="signup-phone" name="phone" placeholder="Phone number" required class="rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            <div id="err-phone" class="text-sm text-red-600 hidden mt-1"></div>
+                        </div>
+                        <div>
+                            <input type="text" id="signup-studentid" name="student_id" placeholder="Student ID " required class="rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            <div id="err-studentid" class="text-sm text-red-600 hidden mt-1"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-slate-600">Department</label>
+                        <select id="signup-dept" name="department" required class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            <option value="" disabled selected>Select Department</option>
+                            <option value="BCA">BCA</option>
+                            <option value="BSc">BSc</option>
+                            <option value="BCom">BCom</option>
+                            <option value="Electronics">Electronics</option>
+                        </select>
+                        <div id="err-dept" class="text-sm text-red-600 hidden mt-1"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-8">
+                        <div>
+                            <input type="password" id="signup-pass" name="password" placeholder="Password" required class="rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            <div id="err-password" class="text-sm text-red-600 hidden mt-1"></div>
+                        </div>
+                        <div>
+                            <input type="password" id="signup-pass-confirm" name="password_confirm" placeholder="Confirm Password" required class="rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            <div id="err-password-confirm" class="text-sm text-red-600 hidden mt-1"></div>
+                        </div>
+                    </div>
+                    <div id="signup-pass-error" class="text-sm text-red-600 hidden">Passwords do not match</div>
+
+                    <!-- profile picture now selected via top avatar, so removed bottom file input -->
+                    <div class="pt-2">
+                        <button type="submit" id="signup-submit" class="w-full rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 font-semibold hover:opacity-95">Create account</button>
+                    </div>
+                    <div id="signup-general-error" class="text-sm text-red-600 hidden mt-2"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('auth-modal');
+            const overlay = document.getElementById('auth-overlay');
+            const btnClose = document.getElementById('auth-close');
+            const loginForm = document.getElementById('auth-login');
+            const signupForm = document.getElementById('auth-signup');
+            const loginTab = document.getElementById('auth-login-btn');
+            const signupTab = document.getElementById('auth-signup-btn');
+
+            if (!modal) return; // nothing to do
+
+            const modalCard = modal.querySelector('.modal-card');
+
+            function openModal(mode){
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                modal.setAttribute('aria-hidden','false');
+                // animate in
+                requestAnimationFrame(() => {
+                    if (modalCard) {
+                        modalCard.classList.remove('opacity-0','scale-95');
+                        modalCard.classList.add('opacity-100','scale-100');
+                    }
+                });
+                if(mode === 'signup') showSignup(); else showLogin();
+                setTimeout(() => document.getElementById(mode === 'signup' ? 'signup-name' : 'login-email')?.focus(), 120);
+            }
+
+            function closeModal(){
+                // animate out
+                if (modalCard) {
+                    modalCard.classList.add('opacity-0','scale-95');
+                    modalCard.classList.remove('opacity-100','scale-100');
+                }
+                // hide after animation
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    modal.setAttribute('aria-hidden','true');
+                }, 220);
+            }
+
+            let avatarEnabled = false; // when true, avatar opens file picker (signup mode)
+
+            function showLogin(){
+                if (loginForm) loginForm.classList.remove('hidden');
+                if (signupForm) signupForm.classList.add('hidden');
+                if (loginTab) { loginTab.classList.add('text-purple-700','bg-purple-50'); loginTab.classList.remove('text-purple-500'); }
+                if (signupTab) { signupTab.classList.remove('text-purple-700','bg-purple-50'); signupTab.classList.add('text-purple-500'); }
+                // disable avatar picker in login
+                avatarEnabled = false;
+                // if a preview is visible keep it; otherwise show user icon and hide camera
+                if (avatarPreview && !avatarPreview.classList.contains('hidden')) {
+                    // preview visible -> keep it
+                    document.getElementById('login-avatar-fallback')?.classList.add('hidden');
+                    document.getElementById('signup-avatar-fallback')?.classList.add('hidden');
+                } else {
+                    // show user icon, hide camera
+                    document.getElementById('login-avatar-fallback')?.classList.remove('hidden');
+                    document.getElementById('signup-avatar-fallback')?.classList.add('hidden');
+                }
+            }
+
+            function showSignup(){
+                if (signupForm) signupForm.classList.remove('hidden');
+                if (loginForm) loginForm.classList.add('hidden');
+                if (signupTab) { signupTab.classList.add('text-purple-700','bg-purple-50'); signupTab.classList.remove('text-purple-500'); }
+                if (loginTab) { loginTab.classList.remove('text-purple-700','bg-purple-50'); loginTab.classList.add('text-purple-500'); }
+                // enable avatar picker in signup
+                avatarEnabled = true;
+                // show camera fallback (unless preview is visible)
+                if (avatarPreview && !avatarPreview.classList.contains('hidden')) {
+                    // user has preview - keep it and hide both fallbacks
+                    document.getElementById('login-avatar-fallback')?.classList.add('hidden');
+                    document.getElementById('signup-avatar-fallback')?.classList.add('hidden');
+                } else {
+                    // show camera, hide user icon
+                    document.getElementById('login-avatar-fallback')?.classList.add('hidden');
+                    document.getElementById('signup-avatar-fallback')?.classList.remove('hidden');
+                }
+            }
+
+            // Open modal from nav
+            document.querySelectorAll('[data-open-modal]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const mode = btn.getAttribute('data-open-modal');
+                    openModal(mode);
+                });
+            });
+
+            // Close handlers
+            if (overlay) overlay.addEventListener('click', closeModal);
+            if (btnClose) btnClose.addEventListener('click', closeModal);
+            document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeModal(); });
+
+            // Tabs inside modal
+            if (loginTab) loginTab.addEventListener('click', showLogin);
+            if (signupTab) signupTab.addEventListener('click', showSignup);
+
+            // Avatar preview and avatar container toggle
+            const avatarInput = document.getElementById('signup-avatar');
+            const avatarPreview = document.getElementById('signup-avatar-preview');
+            const avatarFallback = document.getElementById('signup-avatar-fallback');
+            const avatarContainer = document.getElementById('signup-avatar-container');
+
+            // Live (onBlur) validation handlers
+            const signupNameEl = document.getElementById('signup-name');
+            const signupUsernameEl = document.getElementById('signup-username');
+            const signupEmailEl = document.getElementById('signup-email');
+            const signupPhoneEl = document.getElementById('signup-phone');
+            const signupStudentEl = document.getElementById('signup-studentid');
+
+            // Lightweight toast helper (prevents ReferenceError when validators call showToast)
+            function showToast(title, message, type = 'info'){
+                try {
+                    let container = document.getElementById('toast-area');
+                    if(!container){
+                        container = document.createElement('div');
+                        container.id = 'toast-area';
+                        container.style.position = 'fixed';
+                        container.style.top = '18px';
+                        container.style.right = '18px';
+                        container.style.zIndex = 99999;
+                        container.style.display = 'flex';
+                        container.style.flexDirection = 'column';
+                        container.style.gap = '10px';
+                        document.body.appendChild(container);
+                    }
+
+                    const toast = document.createElement('div');
+                    toast.className = 'toast-item';
+                    toast.style.minWidth = '220px';
+                    toast.style.maxWidth = '320px';
+                    toast.style.background = type === 'error' ? '#fee2e2' : (type === 'success' ? '#ecfccb' : '#eef2ff');
+                    toast.style.border = '1px solid rgba(0,0,0,0.06)';
+                    toast.style.padding = '10px 12px';
+                    toast.style.borderRadius = '10px';
+                    toast.style.boxShadow = '0 6px 20px rgba(2,6,23,0.08)';
+                    toast.style.color = '#0f172a';
+                    toast.style.fontSize = '13px';
+                    toast.style.display = 'flex';
+                    toast.style.flexDirection = 'column';
+
+                    const t = document.createElement('strong');
+                    t.textContent = title || '';
+                    t.style.marginBottom = '4px';
+                    toast.appendChild(t);
+
+                    const p = document.createElement('div');
+                    p.textContent = message || '';
+                    toast.appendChild(p);
+
+                    container.appendChild(toast);
+
+                    // Auto-remove
+                    setTimeout(() => {
+                        toast.style.transition = 'opacity 200ms, transform 200ms';
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateY(-6px)';
+                        setTimeout(() => { try{ container.removeChild(toast); }catch(e){} }, 220);
+                    }, 4200);
+                } catch (e) { console.error('showToast error', e); }
+            }
+
+            function validateNameField(){
+                const v = (signupNameEl?.value || '').trim();
+                if(!/^[A-Za-z ]+$/.test(v)) showToast('Name invalid','Full name must contain only letters and spaces.');
+            }
+            function validateUsernameField(){
+                const v = (signupUsernameEl?.value || '').trim();
+                if(!v || /^\d+$/.test(v)) showToast('Username invalid','Username cannot be only numbers.');
+            }
+            function validateEmailField(){
+                const v = (signupEmailEl?.value || '').trim();
+                if(!v || v.indexOf('@') === -1) { showToast('Email invalid','Valid email is required.'); return; }
+                const local = v.split('@')[0]; if(/^\d+$/.test(local)) showToast('Email invalid','Email local part cannot be numbers only.');
+            }
+            function validatePhoneField(){
+                const v = (signupPhoneEl?.value || '').trim(); if(!/^\d{10}$/.test(v)) showToast('Phone invalid','Phone number must be 10 digits.');
+            }
+            function validateStudentField(){
+                const v = (signupStudentEl?.value || '').trim(); if(!/^REG\d{3,}$/.test(v)) showToast('Student ID invalid','Student ID must be in format REG001.');
+            }
+
+            if(signupNameEl) signupNameEl.addEventListener('blur', validateNameField);
+            if(signupUsernameEl) signupUsernameEl.addEventListener('blur', validateUsernameField);
+            if(signupEmailEl) signupEmailEl.addEventListener('blur', validateEmailField);
+            if(signupPhoneEl) signupPhoneEl.addEventListener('blur', validatePhoneField);
+            if(signupStudentEl) signupStudentEl.addEventListener('blur', validateStudentField);
+
+            // Helper to open file chooser
+            function openAvatarPicker() {
+                if (avatarInput) avatarInput.click();
+            }
+
+            // Trigger file input when clicking the avatar container or fallback button, only when enabled
+            if (avatarContainer) {
+                avatarContainer.addEventListener('click', function(e){ if (avatarEnabled) openAvatarPicker(); });
+                avatarContainer.addEventListener('keydown', function(e){ if((e.key === 'Enter' || e.key === ' ') && avatarEnabled) { e.preventDefault(); openAvatarPicker(); } });
+            }
+
+            if (avatarInput) {
+                avatarInput.addEventListener('change', function () {
+                    const file = this.files && this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            if (avatarPreview) {
+                                avatarPreview.src = e.target.result;
+                                avatarPreview.classList.remove('hidden');
+                            }
+                            if (avatarFallback) avatarFallback.classList.add('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        // no file -> show fallback icon
+                        if (avatarPreview) { avatarPreview.src = ''; avatarPreview.classList.add('hidden'); }
+                        if (avatarFallback) avatarFallback.classList.remove('hidden');
+                    }
+                });
+            }
+
+            // Login submit -> AJAX to /login/
+            if (loginForm) loginForm.addEventListener('submit', function(e){
+                e.preventDefault();
+                const email = (document.getElementById('login-email')?.value || '').trim();
+                const pass = (document.getElementById('login-pass')?.value || '');
+                if(!email){ showToast('Login error','Email or username is required.'); return; }
+                if(!pass){ showToast('Login error','Password is required.'); return; }
+
+                const fd = new FormData();
+                fd.append('email', email);
+                fd.append('password', pass);
+                fetch('/login/', { method: 'POST', body: fd, credentials: 'same-origin', headers: {'X-Requested-With': 'XMLHttpRequest'} })
+                  .then(async res => {
+                      const ct = res.headers.get('content-type') || '';
+                      let parsed = null;
+                      let text = null;
+                      try {
+                          if (ct.includes('application/json')) parsed = await res.json();
+                          else { text = await res.text(); try { parsed = JSON.parse(text); } catch(e){} }
+                      } catch(e){ console.error('Error parsing login response', e); }
+                      return { status: res.status, body: parsed, text };
+                  })
+                  .then(({status, body, text}) => {
+                        if(status >= 200 && status < 300 && body && body.success){
+                            showToast('Welcome', 'Logged in successfully');
+                            // Check if redirect_url is provided, otherwise reload
+                            if (body.redirect_url) {
+                                setTimeout(() => { window.location.href = body.redirect_url; }, 500);
+                            } else {
+                                // Fallback: wait a tick for session cookie to be set, then do a hard reload to reflect server-side user.is_authenticated
+                                setTimeout(() => { window.location.reload(true); }, 250);
+                            }
+                            return;
+                        }
+                        if (body && body.errors) {
+                            if(body.errors.email) showToast('Login error', body.errors.email);
+                            if(body.errors.password) showToast('Login error', body.errors.password);
+                            return;
+                        }
+                        if (text) { showToast('Login error', text); return; }
+                        showToast('Error','Unexpected error during login');
+                  })
+                  .catch(err => { console.error(err); showToast('Network error','Please try again'); });
+            });
+
+            if (signupForm) {
+                signupForm.addEventListener('submit', function(e){
+                    e.preventDefault();
+
+                    // Clear previous errors
+                    function hideErr(id){ const el = document.getElementById(id); if(el) el.classList.add('hidden'); }
+                    function showErr(id, msg){ const el = document.getElementById(id); if(el){ el.textContent = msg; el.classList.remove('hidden'); } }
+                    ['err-name','err-username','err-email','err-phone','err-studentid','err-dept','err-password','err-password-confirm','signup-pass-error','signup-general-error'].forEach(hideErr);
+
+                    // Gather values
+                    const name = (document.getElementById('signup-name')?.value || '').trim();
+                    const username = (document.getElementById('signup-username')?.value || '').trim();
+                    const email = (document.getElementById('signup-email')?.value || '').trim();
+                    const phone = (document.getElementById('signup-phone')?.value || '').trim();
+                    const studentid = (document.getElementById('signup-studentid')?.value || '').trim();
+                    const dept = (document.getElementById('signup-dept')?.value || '').trim();
+                    const pass = (document.getElementById('signup-pass')?.value || '');
+                    const passConfirm = (document.getElementById('signup-pass-confirm')?.value || '');
+
+                    let clientErrors = false;
+
+                    // Name: letters and spaces only
+                    if (!/^[A-Za-z ]+$/.test(name)) { showErr('err-name', 'Full name must contain only letters and spaces.'); clientErrors = true; }
+
+                    // Username: not numeric-only
+                    if (!username || /^\d+$/.test(username)) { showErr('err-username', 'Username cannot be only numbers.'); clientErrors = true; }
+
+                    // Email: basic check and local part not numeric-only
+                    if (!email || email.indexOf('@') === -1) { showErr('err-email', 'Valid email is required.'); clientErrors = true; }
+                    else { const local = email.split('@')[0]; if (/^\d+$/.test(local)) { showErr('err-email','Email local part cannot be numbers only.'); clientErrors = true; } }
+
+                    // Phone: 10 digits
+                    if (!/^\d{10}$/.test(phone)) { showErr('err-phone','Phone number must be 10 digits.'); clientErrors = true; }
+
+                    // Student ID: REG followed by at least 3 digits
+                    if (!/^REG\d{3,}$/.test(studentid)) { showErr('err-studentid','Student ID must be in format REG001.'); clientErrors = true; }
+
+                    // Dept required
+                    if (!dept) { showErr('err-dept','Please select a department.'); clientErrors = true; }
+
+                    // Password match and length
+                    if (pass.length < 6) { showErr('err-password','Password must be at least 6 characters.'); clientErrors = true; }
+                    if (pass !== passConfirm) { showErr('signup-pass-error','Passwords do not match'); clientErrors = true; }
+
+                    if (clientErrors) return;
+
+                    // Build FormData (include avatar if selected)
+                    const fd = new FormData();
+                    fd.append('name', name);
+                    fd.append('username', username);
+                    fd.append('email', email);
+                    fd.append('phone', phone);
+                    fd.append('student_id', studentid);
+                    fd.append('department', dept);
+                    fd.append('password', pass);
+                    const avatarFile = avatarInput && avatarInput.files && avatarInput.files[0];
+                    if (avatarFile) fd.append('avatar', avatarFile);
+
+                    // Submit to server (robust handling for non-JSON responses)
+                    fetch('/signup/', { method: 'POST', body: fd, credentials: 'same-origin', headers: {'X-Requested-With': 'XMLHttpRequest'} })
+                        .then(async res => {
+                            const ct = res.headers.get('content-type') || '';
+                            let parsed = null;
+                            let text = null;
+                            try {
+                                if (ct.includes('application/json')) {
+                                    parsed = await res.json();
+                                } else {
+                                    // try to parse text and JSON fallback
+                                    text = await res.text();
+                                    try { parsed = JSON.parse(text); } catch(e){ /* keep text */ }
+                                }
+                            } catch (e) {
+                                // parsing failed
+                                console.error('Error parsing server response', e);
+                            }
+                            return { status: res.status, body: parsed, text };
+                        })
+                        .then(({status, body, text}) => {
+                            if (status >= 200 && status < 300 && body && body.success) {
+                                // Check if we need to redirect to face capture
+                                if (body.redirect_to_capture) {
+                                    showToast('Success','Account created! Redirecting to face capture...');
+                                    setTimeout(() => {
+                                        window.location.href = '/face-capture/';
+                                    }, 1500);
+                                    return;
+                                }
+                                
+                                showToast('Success','Account created. You can now log in.');
+                                // switch to login and prefill identifier
+                                showLogin();
+                                const loginEmailEl = document.getElementById('login-email');
+                                if (loginEmailEl) {
+                                    // Prefer email; fallback to username
+                                    loginEmailEl.value = email || username || '';
+                                    loginEmailEl.focus();
+                                }
+                                return;
+                            }
+
+                            // If server returned structured errors
+                            if (body && body.errors) {
+                                for (const k in body.errors) {
+                                    const msg = body.errors[k];
+                                    if (k === 'name') showErr('err-name', msg);
+                                    else if (k === 'username') showErr('err-username', msg);
+                                    else if (k === 'email') showErr('err-email', msg);
+                                    else if (k === 'phone') showErr('err-phone', msg);
+                                    else if (k === 'student_id') showErr('err-studentid', msg);
+                                    else if (k === 'password') showErr('err-password', msg);
+                                    else showErr('signup-general-error', msg);
+                                }
+                                return;
+                            }
+
+                            // If server returned plain text, show it
+                            if (text) {
+                                showErr('signup-general-error', text);
+                                return;
+                            }
+
+                            // Fallback
+                            showErr('signup-general-error', 'Unexpected server response.');
+                        })
+                        .catch(err => {
+                            // Network failures or CORS issues land here
+                            console.error('Signup request failed:', err);
+                            showErr('signup-general-error', 'Network error — request failed. Check console for details.');
+                        });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
