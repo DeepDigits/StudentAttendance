@@ -41,6 +41,29 @@
 	<style>
 		body {
 			background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 50%, #f0f9ff 100%);
+			position: relative;
+			overflow-x: hidden;
+		}
+
+		body::before {
+			content: '';
+			position: fixed;
+			top: -50%;
+			left: -50%;
+			width: 200%;
+			height: 200%;
+			background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+			            radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+			            radial-gradient(circle at 40% 90%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
+			animation: gradientShift 20s ease infinite;
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		@keyframes gradientShift {
+			0%, 100% { transform: translate(0, 0) rotate(0deg); }
+			33% { transform: translate(5%, -5%) rotate(120deg); }
+			66% { transform: translate(-5%, 5%) rotate(240deg); }
 		}
 
 		.glass-card {
@@ -48,11 +71,53 @@
 			backdrop-filter: blur(20px);
 			border: 1px solid rgba(255, 255, 255, 0.3);
 			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+			position: relative;
+			z-index: 1;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		.glass-card::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 2px;
+			background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+			opacity: 0;
+			transition: opacity 0.3s ease;
+		}
+
+		.glass-card:hover::before {
+			opacity: 1;
+		}
+
+		.metric-card {
+			position: relative;
+			overflow: hidden;
+			transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		.metric-card::after {
+			content: '';
+			position: absolute;
+			top: -50%;
+			left: -50%;
+			width: 200%;
+			height: 200%;
+			background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+			opacity: 0;
+			transition: opacity 0.4s ease;
+			pointer-events: none;
 		}
 
 		.metric-card:hover {
-			transform: translateY(-6px);
+			transform: translateY(-8px) scale(1.02);
 			box-shadow: 0 25px 50px -15px rgba(99, 102, 241, 0.35);
+		}
+
+		.metric-card:hover::after {
+			opacity: 0.4;
 		}
 
 		.dark body {
@@ -70,8 +135,49 @@
 			to { opacity: 1; transform: translateY(0); }
 		}
 
+		@keyframes slideInLeft {
+			from { opacity: 0; transform: translateX(-30px); }
+			to { opacity: 1; transform: translateX(0); }
+		}
+
+		@keyframes slideInRight {
+			from { opacity: 0; transform: translateX(30px); }
+			to { opacity: 1; transform: translateX(0); }
+		}
+
+		@keyframes scaleIn {
+			from { opacity: 0; transform: scale(0.95); }
+			to { opacity: 1; transform: scale(1); }
+		}
+
+		@keyframes float {
+			0%, 100% { transform: translateY(0px); }
+			50% { transform: translateY(-10px); }
+		}
+
+		@keyframes pulse {
+			0%, 100% { opacity: 1; }
+			50% { opacity: 0.7; }
+		}
+
 		.fade-in {
 			animation: fadeIn 0.6s ease-out forwards;
+		}
+
+		.slide-in-left {
+			animation: slideInLeft 0.6s ease-out forwards;
+		}
+
+		.slide-in-right {
+			animation: slideInRight 0.6s ease-out forwards;
+		}
+
+		.scale-in {
+			animation: scaleIn 0.5s ease-out forwards;
+		}
+
+		.floating {
+			animation: float 3s ease-in-out infinite;
 		}
 
 		/* Smooth scroll and smart scroll-padding so anchored sections don't get hidden */
@@ -82,10 +188,78 @@
 
 		.chart-container {
 			background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+			position: relative;
+			border-radius: 1rem;
+			transition: all 0.3s ease;
+		}
+
+		.chart-container:hover {
+			box-shadow: 0 10px 40px rgba(99, 102, 241, 0.1);
 		}
 
 		.dark .chart-container {
 			background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+		}
+
+		/* Floating particles */
+		.particle {
+			position: fixed;
+			pointer-events: none;
+			z-index: 0;
+			opacity: 0;
+		}
+
+		@keyframes particleFloat {
+			0% {
+				transform: translateY(100vh) scale(0);
+				opacity: 0;
+			}
+			10% {
+				opacity: 0.6;
+			}
+			90% {
+				opacity: 0.6;
+			}
+			100% {
+				transform: translateY(-100vh) scale(1);
+				opacity: 0;
+			}
+		}
+
+		/* Button enhancements */
+		button, .btn {
+			position: relative;
+			overflow: hidden;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		button::before, .btn::before {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 0;
+			height: 0;
+			border-radius: 50%;
+			background: rgba(255, 255, 255, 0.4);
+			transform: translate(-50%, -50%);
+			transition: width 0.6s, height 0.6s;
+		}
+
+		button:hover::before, .btn:hover::before {
+			width: 300px;
+			height: 300px;
+		}
+
+		/* Enhanced stat number animation */
+		.stat-number {
+			display: inline-block;
+			transition: all 0.3s ease;
+		}
+
+		.metric-card:hover .stat-number {
+			transform: scale(1.1);
+			color: var(--accent-600);
 		}
 
 		/* Accent theme variables and helpers */
@@ -255,49 +429,43 @@
 
 			<main class="relative flex-1 space-y-10 px-6 py-10">
 				<section class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-					<article class="metric-card glass-card group relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out fade-in">
-						<div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand-100/80 blur-2xl"></div>
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Attendance Rate</p>
-								<h3 id="attendanceRate" class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
-							</div>
-							<span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-soft">
-								<i class="fas fa-user-check"></i>
-							</span>
+				<article class="metric-card glass-card group relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out slide-in-left">
+					<div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand-100/80 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Attendance Rate</p>
+							<h3 id="attendanceRate" class="stat-number mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
 						</div>
-						<p class="mt-4 flex items-center gap-2 text-xs font-medium text-slate-500"><i class="fas fa-users"></i> <span id="todayAttendance">—</span> students today</p>
-					</article>
-
-					<article class="metric-card glass-card relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out fade-in" style="animation-delay: 0.1s;">
-						<div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-sky-100/80 blur-2xl"></div>
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Classes in Session</p>
-								<h3 id="classesInSession" class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
-							</div>
-							<span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-soft">
-								<i class="fas fa-door-open"></i>
-							</span>
+						<span class="floating flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-soft">
+							<i class="fas fa-user-check"></i>
+						</span>
+					</div>
+					<p class="mt-4 flex items-center gap-2 text-xs font-medium text-slate-500"><i class="fas fa-users"></i> <span id="todayAttendance">—</span> students today</p>
+				</article>				<article class="metric-card glass-card relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out slide-in-left" style="animation-delay: 0.1s;">
+					<div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-sky-100/80 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Classes in Session</p>
+							<h3 id="classesInSession" class="stat-number mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
 						</div>
-						<p class="mt-4 flex items-center gap-2 text-xs font-medium text-sky-500"><i class="fas fa-circle"></i> Live updates</p>
-					</article>
-
-					<article class="metric-card glass-card relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out fade-in" style="animation-delay: 0.2s;">
-						<div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-100/80 blur-2xl"></div>
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Average Punctuality</p>
-								<h3 id="punctualityRate" class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
-							</div>
-							<span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-soft">
-								<i class="fas fa-clock"></i>
-							</span>
+						<span class="floating flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-soft" style="animation-delay: 0.5s;">
+							<i class="fas fa-door-open"></i>
+						</span>
+					</div>
+					<p class="mt-4 flex items-center gap-2 text-xs font-medium text-sky-500"><i class="fas fa-circle"></i> Live updates</p>
+				</article>				<article class="metric-card glass-card relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out slide-in-right" style="animation-delay: 0.2s;">
+					<div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-100/80 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Average Punctuality</p>
+							<h3 id="punctualityRate" class="stat-number mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
 						</div>
-						<p class="mt-4 flex items-center gap-2 text-xs font-medium text-emerald-500"><i class="fas fa-check-circle"></i> <span id="onTimeCount">—</span> on-time arrivals</p>
-					</article>
-
-					<article class="metric-card glass-card relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out fade-in" style="animation-delay: 0.3s;">
+						<span class="floating flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-soft" style="animation-delay: 1s;">
+							<i class="fas fa-clock"></i>
+						</span>
+					</div>
+					<p class="mt-4 flex items-center gap-2 text-xs font-medium text-emerald-500"><i class="fas fa-check-circle"></i> <span id="onTimeCount">—</span> on-time arrivals</p>
+				</article>					<article class="metric-card glass-card relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out fade-in" style="animation-delay: 0.3s;">
 						<div class="absolute -right-12 -top-10 h-32 w-32 rounded-full bg-rose-100/80 blur-2xl"></div>
 						<div class="flex items-center justify-between">
 							<div>
@@ -447,25 +615,25 @@
 								<i class="fas fa-spinner fa-spin mr-2"></i> Loading alerts...
 							</li>
 						</ul>
-					</div>
+				</div>
 
-					<div class="glass-card rounded-3xl p-6 shadow-soft fade-in" style="animation-delay: 0.9s;" id="reports">
-						<header class="flex items-center justify-between">
-							<div>
-								<h3 class="text-lg font-bold text-slate-900 dark:text-white">Crowd Detection Report</h3>
-								<p class="text-xs text-slate-500 dark:text-slate-400">Live snapshot of crowd density across monitored zones.</p>
-							</div>
-							<button id="generateCrowd" class="rounded-full accent-gradient-r px-4 py-2 text-xs font-semibold text-white shadow-soft transition-all duration-300 hover:shadow-lg" data-ripple-light="true">Generate report</button>
-						</header>
-						<div class="mt-6 grid gap-4 lg:grid-cols-1 text-sm" id="crowdReportContainer">
-							<div class="flex items-center justify-center py-8">
-								<i class="fas fa-spinner fa-spin mr-2"></i> Loading crowd report...
-							</div>
+				<!-- Crowd Detection Report - Commented Out
+				<div class="glass-card rounded-3xl p-6 shadow-soft fade-in" style="animation-delay: 0.9s;" id="reports">
+					<header class="flex items-center justify-between">
+						<div>
+							<h3 class="text-lg font-bold text-slate-900 dark:text-white">Crowd Detection Report</h3>
+							<p class="text-xs text-slate-500 dark:text-slate-400">Live snapshot of crowd density across monitored zones.</p>
+						</div>
+						<button id="generateCrowd" class="rounded-full accent-gradient-r px-4 py-2 text-xs font-semibold text-white shadow-soft transition-all duration-300 hover:shadow-lg" data-ripple-light="true">Generate report</button>
+					</header>
+					<div class="mt-6 grid gap-4 lg:grid-cols-1 text-sm" id="crowdReportContainer">
+						<div class="flex items-center justify-center py-8">
+							<i class="fas fa-spinner fa-spin mr-2"></i> Loading crowd report...
 						</div>
 					</div>
-				</section>
-
-				<!-- Students Directory -->
+				</div>
+				-->
+			</section>				<!-- Students Directory -->
 				<section id="students" class="glass-card rounded-3xl p-6 shadow-soft fade-in" style="animation-delay: 1s;">
 					<header class="flex items-center justify-between mb-4">
 						<div>
@@ -1176,7 +1344,7 @@ function getCSRFToken(){
 
 	async function updateDashboard() {
 		try {
-			const response = await fetch('/api/dashboard/stats/', {
+			const response = await fetch('/api/face-dashboard/stats/', {
 				credentials: 'include'
 			});
 			const data = await response.json();
@@ -1539,7 +1707,7 @@ function getCSRFToken(){
 
 	async function updateRecentCheckins() {
 		try {
-			const response = await fetch('/api/dashboard/stats/', { credentials: 'include' });
+			const response = await fetch('/api/face-dashboard/stats/', { credentials: 'include' });
 			const data = await response.json();
 			
 			const container = document.getElementById('recentCheckins');
@@ -2405,5 +2573,173 @@ window.closeUnknownFaceModal = function() {
 </script>
 <!-- Chart.js CDN for visual graphs -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// Particle system for beautiful floating elements
+(function() {
+	const colors = ['#6366f1', '#8b5cf6', '#3b82f6', '#06b6d4', '#10b981'];
+	
+	function createParticle() {
+		const particle = document.createElement('div');
+		particle.className = 'particle';
+		particle.style.left = Math.random() * 100 + '%';
+		particle.style.width = (Math.random() * 8 + 4) + 'px';
+		particle.style.height = particle.style.width;
+		particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+		particle.style.borderRadius = '50%';
+		particle.style.animation = `particleFloat ${Math.random() * 10 + 15}s linear infinite`;
+		particle.style.animationDelay = Math.random() * 5 + 's';
+		document.body.appendChild(particle);
+		
+		setTimeout(() => particle.remove(), 25000);
+	}
+	
+	// Create particles periodically
+	setInterval(createParticle, 2000);
+	for(let i = 0; i < 5; i++) {
+		setTimeout(createParticle, i * 400);
+	}
+})();
+
+// Enhanced smooth scrolling with offset
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+	anchor.addEventListener('click', function (e) {
+		e.preventDefault();
+		const target = document.querySelector(this.getAttribute('href'));
+		if (target) {
+			const offset = 100;
+			const elementPosition = target.getBoundingClientRect().top;
+			const offsetPosition = elementPosition + window.pageYOffset - offset;
+			
+			window.scrollTo({
+				top: offsetPosition,
+				behavior: 'smooth'
+			});
+		}
+	});
+});
+
+// Add active state to navigation items on scroll
+const sections = document.querySelectorAll('section[id]');
+const navItems = document.querySelectorAll('.nav-item');
+
+window.addEventListener('scroll', () => {
+	let current = '';
+	sections.forEach(section => {
+		const sectionTop = section.offsetTop;
+		const sectionHeight = section.clientHeight;
+		if (pageYOffset >= (sectionTop - 200)) {
+			current = section.getAttribute('id');
+		}
+	});
+	
+	navItems.forEach(item => {
+		item.classList.remove('active');
+		if (item.getAttribute('href') === '#' + current || (current === '' && item.getAttribute('href') === '#')) {
+			item.classList.add('active');
+		}
+	});
+});
+
+// Animate numbers on load with counter effect
+function animateCounter(element, target, duration = 1000) {
+	const start = 0;
+	const increment = target / (duration / 16);
+	let current = start;
+	
+	const timer = setInterval(() => {
+		current += increment;
+		if (current >= target) {
+			element.textContent = target;
+			clearInterval(timer);
+		} else {
+			element.textContent = Math.floor(current);
+		}
+	}, 16);
+}
+
+// Intersection Observer for scroll animations
+const observerOptions = {
+	threshold: 0.1,
+	rootMargin: '0px 0px -100px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+	entries.forEach(entry => {
+		if (entry.isIntersecting) {
+			entry.target.style.opacity = '1';
+			entry.target.style.transform = 'translateY(0)';
+		}
+	});
+}, observerOptions);
+
+// Observe all cards for scroll animations
+document.querySelectorAll('.glass-card').forEach(card => {
+	if (!card.style.animationDelay) {
+		card.style.opacity = '0';
+		card.style.transform = 'translateY(20px)';
+		card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+	}
+	observer.observe(card);
+});
+
+// Add ripple effect to buttons
+document.querySelectorAll('button, .btn').forEach(button => {
+	button.addEventListener('click', function(e) {
+		const ripple = document.createElement('span');
+		const rect = this.getBoundingClientRect();
+		const size = Math.max(rect.width, rect.height);
+		const x = e.clientX - rect.left - size / 2;
+		const y = e.clientY - rect.top - size / 2;
+		
+		ripple.style.width = ripple.style.height = size + 'px';
+		ripple.style.left = x + 'px';
+		ripple.style.top = y + 'px';
+		ripple.style.position = 'absolute';
+		ripple.style.borderRadius = '50%';
+		ripple.style.background = 'rgba(255, 255, 255, 0.6)';
+		ripple.style.transform = 'scale(0)';
+		ripple.style.animation = 'rippleEffect 0.6s ease-out';
+		ripple.style.pointerEvents = 'none';
+		
+		this.appendChild(ripple);
+		setTimeout(() => ripple.remove(), 600);
+	});
+});
+
+// Add ripple animation
+const style = document.createElement('style');
+style.textContent = `
+	@keyframes rippleEffect {
+		to {
+			transform: scale(4);
+			opacity: 0;
+		}
+	}
+`;
+document.head.appendChild(style);
+
+// Card tilt effect on mouse move
+document.querySelectorAll('.metric-card').forEach(card => {
+	card.addEventListener('mousemove', (e) => {
+		const rect = card.getBoundingClientRect();
+		const x = e.clientX - rect.left;
+		const y = e.clientY - rect.top;
+		
+		const centerX = rect.width / 2;
+		const centerY = rect.height / 2;
+		
+		const rotateX = (y - centerY) / 20;
+		const rotateY = (centerX - x) / 20;
+		
+		card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px) scale(1.02)`;
+	});
+	
+	card.addEventListener('mouseleave', () => {
+		card.style.transform = '';
+	});
+});
+</script>
+
 </body>
 </html>
