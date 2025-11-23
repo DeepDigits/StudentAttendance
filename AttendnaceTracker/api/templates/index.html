@@ -252,7 +252,7 @@
             </ul>
             <div class="hidden md:flex items-center space-x-4">
                 {% if user.is_authenticated and request.user.is_superuser %}
-                    <a href="{% url 'dashboard' %}" class="px-4 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/40 hover:shadow-lg hover:shadow-purple-500/30 transition hover-lift flex items-center space-x-2">
+                    <a href="{% url 'face_dashboard' %}" class="px-4 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/40 hover:shadow-lg hover:shadow-purple-500/30 transition hover-lift flex items-center space-x-2">
                         <i class="fas fa-chart-line"></i><span>Dashboard</span>
                     </a>
                     <form method="post" action="{% url 'logout' %}" class="inline">
@@ -1119,8 +1119,13 @@
                   .then(({status, body, text}) => {
                         if(status >= 200 && status < 300 && body && body.success){
                             showToast('Welcome', 'Logged in successfully');
-                            // wait a tick for session cookie to be set, then do a hard reload to reflect server-side user.is_authenticated
-                            setTimeout(() => { window.location.reload(true); }, 250);
+                            // Check if redirect_url is provided, otherwise reload
+                            if (body.redirect_url) {
+                                setTimeout(() => { window.location.href = body.redirect_url; }, 500);
+                            } else {
+                                // Fallback: wait a tick for session cookie to be set, then do a hard reload to reflect server-side user.is_authenticated
+                                setTimeout(() => { window.location.reload(true); }, 250);
+                            }
                             return;
                         }
                         if (body && body.errors) {
