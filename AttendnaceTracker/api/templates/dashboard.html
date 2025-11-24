@@ -40,7 +40,7 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 	<style>
 		body {
-			background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 50%, #f0f9ff 100%);
+			background: linear-gradient(135deg, #f0f4ff 0%, #fef3f9 30%, #f0f9ff 60%, #f8fafc 100%);
 			position: relative;
 			overflow-x: hidden;
 		}
@@ -52,10 +52,12 @@
 			left: -50%;
 			width: 200%;
 			height: 200%;
-			background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-			            radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-			            radial-gradient(circle at 40% 90%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
-			animation: gradientShift 20s ease infinite;
+			background: 
+				radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+				radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+				radial-gradient(circle at 40% 90%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+				radial-gradient(circle at 60% 20%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+			animation: gradientShift 25s ease infinite;
 			pointer-events: none;
 			z-index: 0;
 		}
@@ -67,13 +69,14 @@
 		}
 
 		.glass-card {
-			background: rgba(255, 255, 255, 0.85);
-			backdrop-filter: blur(20px);
-			border: 1px solid rgba(255, 255, 255, 0.3);
-			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+			background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+			backdrop-filter: blur(24px) saturate(180%);
+			-webkit-backdrop-filter: blur(24px) saturate(180%);
+			border: 1px solid rgba(255, 255, 255, 0.5);
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 			position: relative;
 			z-index: 1;
-			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 		}
 
 		.glass-card::before {
@@ -82,10 +85,15 @@
 			top: 0;
 			left: 0;
 			right: 0;
-			height: 2px;
-			background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+			height: 3px;
+			background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), rgba(236, 72, 153, 0.5), transparent);
 			opacity: 0;
-			transition: opacity 0.3s ease;
+			transition: opacity 0.4s ease;
+		}
+
+		.glass-card:hover {
+			box-shadow: 0 12px 48px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+			transform: translateY(-2px);
 		}
 
 		.glass-card:hover::before {
@@ -180,6 +188,147 @@
 			animation: float 3s ease-in-out infinite;
 		}
 
+		/* Interactive badges */
+		.status-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.5rem 1rem;
+			border-radius: 9999px;
+			font-size: 0.875rem;
+			font-weight: 600;
+			transition: all 0.3s ease;
+			cursor: pointer;
+		}
+
+		.status-badge:hover {
+			transform: scale(1.05);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		}
+
+		.status-badge.success {
+			background: linear-gradient(135deg, #10b981, #059669);
+			color: white;
+		}
+
+		.status-badge.warning {
+			background: linear-gradient(135deg, #f59e0b, #d97706);
+			color: white;
+		}
+
+		.status-badge.danger {
+			background: linear-gradient(135deg, #ef4444, #dc2626);
+			color: white;
+		}
+
+		/* Classroom Status Card Styles */
+		.status-card {
+			background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+			border: 1px solid rgba(226, 232, 240, 0.5);
+			border-radius: 1.5rem;
+			padding: 1.5rem;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.status-card:hover {
+			transform: translateY(-8px);
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+			border-color: rgba(16, 185, 129, 0.3);
+		}
+
+		.dark .status-card {
+			background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(15, 15, 15, 0.8) 100%);
+			border: 1px solid rgba(40, 40, 40, 0.8);
+		}
+
+		.status-card.active {
+			border-color: rgba(16, 185, 129, 0.4);
+			background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.04) 100%);
+		}
+
+		.dark .status-card.active {
+			background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.08) 100%);
+			border-color: rgba(16, 185, 129, 0.3);
+		}
+
+		.capacity-bar {
+			height: 6px;
+			border-radius: 3px;
+			background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 100%);
+			overflow: hidden;
+			position: relative;
+		}
+
+		.dark .capacity-bar {
+			background: linear-gradient(90deg, rgba(40, 40, 40, 0.6) 0%, rgba(30, 30, 30, 0.6) 100%);
+		}
+
+		.capacity-fill {
+			height: 100%;
+			border-radius: 3px;
+			background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+			transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+			box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+		}
+
+		/* Animated progress bars */
+		.progress-bar {
+			width: 100%;
+			height: 8px;
+			background: rgba(148, 163, 184, 0.2);
+			border-radius: 9999px;
+			overflow: hidden;
+			position: relative;
+		}
+
+		.progress-bar::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+			width: 30%;
+			background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+			animation: shimmer 2s infinite;
+		}
+
+		@keyframes shimmer {
+			0% { transform: translateX(-100%); }
+			100% { transform: translateX(400%); }
+		}
+
+		.progress-fill {
+			height: 100%;
+			background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+			border-radius: 9999px;
+			transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+			box-shadow: 0 0 12px rgba(99, 102, 241, 0.5);
+		}
+
+		/* Pulse animation for live indicators */
+		@keyframes pulse-ring {
+			0% {
+				box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+			}
+			50% {
+				box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+			}
+			100% {
+				box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+			}
+		}
+
+		.live-indicator {
+			display: inline-block;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #10b981;
+			animation: pulse-ring 2s infinite;
+		}
+
 		/* Smooth scroll and smart scroll-padding so anchored sections don't get hidden */
 		html {
 			scroll-behavior: smooth;
@@ -262,6 +411,39 @@
 			color: var(--accent-600);
 		}
 
+		/* Interactive data grid */
+		.data-grid {
+			display: grid;
+			gap: 1.5rem;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		}
+
+		.data-card {
+			position: relative;
+			cursor: pointer;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		.data-card:hover {
+			z-index: 10;
+		}
+
+		.data-card-inner {
+			position: relative;
+			padding: 1.5rem;
+			border-radius: 1.5rem;
+			background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+			border: 1px solid rgba(255,255,255,0.5);
+			backdrop-filter: blur(12px);
+			transition: all 0.3s ease;
+		}
+
+		.data-card:hover .data-card-inner {
+			background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+			box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+			transform: translateY(-4px);
+		}
+
 		/* Accent theme variables and helpers */
 		:root {
 			/* default = purple */
@@ -290,23 +472,144 @@
 			color: var(--accent-600);
 		}
 
-		/* Sidebar nav icon circle + polish */
-		.nav-item { position: relative; overflow: visible; display: block; }
-		.nav-icon { position: relative; display: inline-flex; align-items: center; justify-content: center; height: 44px; width: 44px; border-radius: 9999px; background: rgba(255,255,255,0.98); box-shadow: 0 10px 30px rgba(2,6,23,0.06); color: var(--accent-600); }
-		.dark .nav-icon { background: rgba(15,23,42,0.65); color: var(--accent-500); }
-		.nav-icon::after { content: ''; position: absolute; left: -18px; top: 50%; transform: translateY(-50%); width: 86px; height: 86px; border-radius: 9999px; background: radial-gradient(circle at 30% 30%, rgba(var(--accent-500-rgb),0.14), transparent 40%); filter: blur(20px); z-index: 0; opacity: 0.95; }
-		.nav-icon > i { position: relative; z-index: 2; font-size: 14px; }
-		.nav-label { position: relative; z-index: 2; color: rgba(20, 35, 58, 0.65); font-weight: 600; }
-		.nav-item:hover .nav-icon { transform: translateY(-2px) scale(1.01); background-image: linear-gradient(to right, var(--accent-500), var(--accent-600)); color: #fff; box-shadow: 0 22px 48px rgba(var(--accent-500-rgb),0.14); }
-		.nav-item .fa-chevron-right { color: rgba(20,35,58,0.35); }
+		/* Modern Sidebar Navigation Styling */
+		.nav-item { 
+			position: relative; 
+			overflow: visible; 
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 14px 16px;
+			border-radius: 16px;
+			transition: all 280ms cubic-bezier(0.16,1,0.3,1);
+			margin-bottom: 8px;
+			cursor: pointer;
+		}
+		
+		.nav-item:hover { 
+			background: rgba(var(--accent-500-rgb),0.06);
+		}
+		
+		.nav-icon { 
+			position: relative; 
+			display: flex; 
+			align-items: center; 
+			justify-content: center; 
+			width: 48px; 
+			height: 48px; 
+			border-radius: 16px; 
+			background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf1 100%); 
+			color: var(--accent-600); 
+			transition: all 280ms cubic-bezier(0.16,1,0.3,1); 
+			flex-shrink: 0; 
+			z-index: 1; 
+			box-shadow: 0 2px 8px rgba(var(--accent-500-rgb),0.08);
+		}
+		
+		.dark .nav-icon { 
+			background: linear-gradient(135deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.8) 100%); 
+			color: var(--accent-500); 
+		}
+		
+		.nav-icon::after { 
+			content: ''; 
+			position: absolute; 
+			left: -12px; 
+			top: 50%; 
+			transform: translateY(-50%); 
+			width: 64px; 
+			height: 64px; 
+			border-radius: 9999px; 
+			background: radial-gradient(circle at 35% 35%, rgba(var(--accent-500-rgb),0.12), transparent 50%); 
+			filter: blur(16px); 
+			z-index: 0; 
+			opacity: 0; 
+			transition: opacity 280ms ease;
+		}
+		
+		.nav-icon > i { 
+			position: relative; 
+			z-index: 2; 
+			font-size: 16px; 
+		}
+		
+		.nav-label { 
+			position: relative;
+			z-index: 2; 
+			color: #5a6b7f; 
+			font-weight: 500; 
+			transition: all 280ms ease; 
+		}
+		
+		.dark .nav-label {
+			color: #a8b5c5;
+		}
+		
+		.nav-item:hover .nav-icon { 
+			transform: translateY(-3px) scale(1.08); 
+			background-image: linear-gradient(135deg, var(--accent-500), var(--accent-600)); 
+			color: #fff; 
+			box-shadow: 0 12px 32px rgba(var(--accent-500-rgb),0.25);
+		}
+		
+		.nav-item:hover .nav-icon::after {
+			opacity: 1;
+		}
+		
+		.nav-item:hover .nav-label { 
+			color: var(--accent-600);
+		}
+		
+		.nav-item .fa-chevron-right { 
+			color: rgba(90,107,127,0.4); 
+			transition: all 280ms ease;
+			font-size: 12px;
+		}
 
-		/* Active / selected tab: draw a subtle rounded rectangle behind the whole item */
-		.nav-item::before { content: ''; position: absolute; left: 8px; right: 8px; top: 6px; bottom: 6px; border-radius: 12px; background: transparent; transition: background 220ms ease, transform 220ms ease, opacity 220ms ease; z-index: 0; pointer-events: none; }
-		.nav-item.active::before { background: linear-gradient(90deg, rgba(var(--accent-500-rgb),0.10), rgba(var(--accent-500-rgb),0.04)); transform: translateX(0); opacity: 1; }
-		.nav-item.active { /* ensure stacking context */ z-index: 2; }
-		.nav-item.active .nav-icon { background-image: linear-gradient(to right, var(--accent-500), var(--accent-600)); color: #fff; box-shadow: 0 18px 44px rgba(var(--accent-500-rgb),0.14); position: relative; z-index: 2; }
-		.nav-item.active .nav-label { color: var(--accent-700); position: relative; z-index: 2; }
-		.nav-item.active .fa-chevron-right { color: rgba(20,35,58,0.45); position: relative; z-index: 2; }
+		/* Active / selected tab styling */
+		.nav-item.active { 
+			background: linear-gradient(135deg, rgba(var(--accent-500-rgb),0.12) 0%, rgba(var(--accent-500-rgb),0.06) 100%);
+			position: relative;
+		}
+		
+		.nav-item.active::before {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 4px;
+			height: 28px;
+			border-radius: 0 2px 2px 0;
+			background: linear-gradient(180deg, var(--accent-500), var(--accent-600));
+		}
+		
+		.nav-item.active .nav-icon { 
+			background-image: linear-gradient(135deg, var(--accent-500), var(--accent-600)); 
+			color: #fff; 
+			box-shadow: 0 8px 24px rgba(var(--accent-500-rgb),0.3);
+			transform: translateY(-2px) scale(1.05);
+			position: relative; 
+			z-index: 2; 
+		}
+		
+		.nav-item.active .nav-icon::after {
+			opacity: 1;
+		}
+		
+		.nav-item.active .nav-label { 
+			color: var(--accent-700); 
+			font-weight: 600;
+			position: relative; 
+			z-index: 2; 
+		}
+		
+		.nav-item.active .fa-chevron-right { 
+			color: var(--accent-600); 
+			transform: translateX(2px);
+			position: relative; 
+			z-index: 2;
+		}
 	</style>
 
 	<style>
@@ -321,6 +624,115 @@
 		.loader-text{font-weight:700;color:var(--accent-700);letter-spacing:0.6px}
 		@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 		@keyframes dash{0%{stroke-dashoffset:125}50%{stroke-dashoffset:40}100%{stroke-dashoffset:125}}
+
+		/* Modern Navbar Styles */
+		.navbar-back-btn:hover i{transform:translateX(-2px)}
+		.navbar-cta-btn:hover{transform:translateY(-2px)}
+		.navbar-cta-btn:active{transform:scale(0.95)}
+		.navbar-notification-btn:hover{background:rgba(255,255,255,0.6)}
+		.navbar-notification-btn:hover i{transform:rotate(15deg)}
+
+		/* Profile Dropdown Animation */
+		.profile-toggle-btn:hover{background:rgba(255,255,255,0.6)}
+		.profile-toggle-btn[aria-expanded="true"]{background:rgba(255,255,255,0.8);border-color:rgba(51,65,85,0.3)}
+
+		.profile-dropdown-menu{
+			transform-origin:top right;
+			transition: opacity 0.3s cubic-bezier(0.16,1,0.3,1), visibility 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1);
+		}
+
+		.profile-dropdown-menu.visible{
+			opacity:1 !important;
+			visibility:visible !important;
+			pointer-events:auto;
+			transform: translateY(0) scale(1) !important;
+		}
+
+		@keyframes pulse-glow{
+			0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.7)}
+			50%{box-shadow:0 0 0 4px rgba(34,197,94,0.1)}
+		}
+
+		/* Navbar Link hover effects */
+		.profile-dropdown-menu a{
+			position:relative;
+		}
+
+		.profile-dropdown-menu a::before{
+			content:'';
+			position:absolute;
+			left:0;
+			top:50%;
+			transform:translateY(-50%);
+			width:3px;
+			height:0;
+			background:linear-gradient(to bottom,var(--brand-500),var(--brand-600));
+			border-radius:2px;
+			transition:all 0.3s cubic-bezier(0.16,1,0.3,1);
+		}
+
+		.profile-dropdown-menu a:hover::before{
+			height:24px;
+		}
+
+		/* Back button hover effects */
+		@keyframes backBtnHover{
+			0%{transform:translateX(0)}
+			100%{transform:translateX(-2px)}
+		}
+
+		/* Notification pulse */
+		@keyframes bellPulse{
+			0%,100%{transform:scale(1) rotate(0deg)}
+			25%{transform:scale(1.05) rotate(-5deg)}
+			75%{transform:scale(1.05) rotate(5deg)}
+		}
+
+		.navbar-notification-btn:hover i{
+			animation:bellPulse 0.6s ease-in-out;
+		}
+
+		/* Status indicator animations */
+		@keyframes statusPulse{
+			0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.8)}
+			50%{box-shadow:0 0 0 3px rgba(34,197,94,0.2)}
+		}
+
+		.navbar-profile-dropdown .h-1-5{
+			animation:statusPulse 2s infinite;
+		}
+
+		/* Navbar responsive adjustments */
+		@media(max-width:768px){
+			header .hidden.md\:flex{display:none}
+		}
+
+		/* Navbar glass morphism effect enhancement */
+		header{
+			position:sticky;
+			background:linear-gradient(135deg,rgba(255,255,255,0.7),rgba(255,255,255,0.4));
+		}
+
+		header.dark:bg-slate-950\/50{
+			background:linear-gradient(135deg,rgba(15,23,42,0.5),rgba(15,23,42,0.3));
+		}
+
+		/* Smooth transitions for all interactive elements */
+		.navbar-back-btn,
+		.navbar-cta-btn,
+		.navbar-notification-btn,
+		.profile-toggle-btn{
+			will-change:transform,box-shadow;
+		}
+
+		/* Navbar item focus states */
+		.navbar-back-btn:focus-visible,
+		.navbar-cta-btn:focus-visible,
+		.navbar-notification-btn:focus-visible,
+		.profile-toggle-btn:focus-visible{
+			outline:2px solid var(--brand-500);
+			outline-offset:2px;
+		}
 	</style>
 </head>
 <body class="min-h-screen text-slate-800 dark:bg-slate-950 dark:text-slate-100">
@@ -335,174 +747,298 @@
 		</div>
 	</div>
 	<div class="flex min-h-screen">
-	<aside class="hidden lg:flex w-72 flex-col gap-8 border-r border-slate-200/60 bg-white/90 px-6 py-10 backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/80 lg:sticky lg:top-0 lg:h-screen lg:self-start">
-			<div class="flex items-center gap-3">
-				<span class="flex h-12 w-12 items-center justify-center rounded-2xl accent-gradient-br text-white shadow-soft">
-					<i class="fas fa-chart-pie"></i>
-				</span>
-				<div>
-					<p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">CampusTrack</p>
-					<h1 class="text-xl font-bold text-slate-900 dark:text-white">Control Center</h1>
+	<aside class="hidden lg:flex w-80 flex-col gap-6 border-r border-slate-200/40 bg-gradient-to-b from-white/95 to-slate-50/80 px-8 py-8 backdrop-blur-xl dark:border-slate-800/50 dark:from-slate-900/90 dark:to-slate-950/80 lg:sticky lg:top-0 lg:h-screen lg:self-start">
+			<!-- Sidebar Header Brand -->
+			<div class="flex items-center gap-4 pb-4">
+				<div class="flex h-16 w-16 items-center justify-center rounded-2xl accent-gradient-br text-white shadow-lg shadow-red-500/20 transition-transform duration-300 hover:scale-110 hover:shadow-xl hover:shadow-red-500/30">
+					<i class="fas fa-pie-chart text-lg"></i>
+				</div>
+				<div class="flex-1">
+					<p class="text-xs uppercase tracking-widest font-semibold text-slate-400 dark:text-slate-500">CampusTrack</p>
+					<h1 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Control Center</h1>
 				</div>
 			</div>
-			<nav class="space-y-1 text-sm font-medium text-slate-500">
-				<a href="#" class="rounded-xl px-4 py-3 text-white shadow-soft nav-item">
-					<div class="flex items-center justify-between">
-						<span class="inline-flex items-center gap-3">
-							<span class="nav-icon"><i class="fas fa-gauge-high text-sm"></i></span>
-							<span class="nav-label ml-3">Overview</span>
+			<div class="h-px bg-gradient-to-r from-slate-200 via-slate-200 to-transparent dark:from-slate-700 dark:via-slate-700 dark:to-transparent"></div>
+			<!-- Navigation Menu -->
+			<nav class="space-y-0 text-sm font-medium text-slate-600 dark:text-slate-400 flex-1">
+				<!-- Overview Item -->
+				<a href="#" class="nav-item active group">
+					<span class="flex items-center gap-4 flex-1">
+						<span class="nav-icon">
+							<i class="fas fa-chart-pie text-lg"></i>
 						</span>
-						<i class="fas fa-chevron-right text-xs"></i>
-					</div>
+						<span class="nav-label">Overview</span>
+					</span>
+					<i class="fas fa-chevron-right"></i>
 				</a>
-				<a href="#attendance" class="rounded-xl px-4 py-3 transition-all duration-300 hover:bg-white hover:text-brand-600 hover:shadow-md dark:hover:bg-slate-800/80 nav-item">
-					<div class="flex items-center gap-3">
-						<span class="nav-icon"><i class="fas fa-user-check text-sm"></i></span>
-						<span class="nav-label ml-3">Attendance</span>
-					</div>
+
+				<!-- Attendance Item -->
+				<a href="#attendance" class="nav-item group">
+					<span class="flex items-center gap-4 flex-1">
+						<span class="nav-icon">
+							<i class="fas fa-users text-lg"></i>
+						</span>
+						<span class="nav-label">Attendance</span>
+					</span>
+					<i class="fas fa-chevron-right"></i>
 				</a>
-				<a href="#classes" class="rounded-xl px-4 py-3 transition-all duration-300 hover:bg-white hover:text-brand-600 hover:shadow-md dark:hover:bg-slate-800/80 nav-item">
-					<div class="flex items-center gap-3">
-						<span class="nav-icon"><i class="fas fa-door-open text-sm"></i></span>
-						<span class="nav-label ml-3">Classrooms</span>
-					</div>
+
+				<!-- Classrooms Item -->
+				<a href="#classes" class="nav-item group">
+					<span class="flex items-center gap-4 flex-1">
+						<span class="nav-icon">
+							<i class="fas fa-door-open text-lg"></i>
+						</span>
+						<span class="nav-label">Classrooms</span>
+					</span>
+					<i class="fas fa-chevron-right"></i>
 				</a>
-				<a href="#alerts" class="rounded-xl px-4 py-3 transition-all duration-300 hover:bg-white hover:text-brand-600 hover:shadow-md dark:hover:bg-slate-800/80 nav-item">
-					<div class="flex items-center gap-3">
-						<span class="nav-icon"><i class="fas fa-bell text-sm"></i></span>
-						<span class="nav-label ml-3">Alerts</span>
-					</div>
+
+				<!-- Alerts Item -->
+				<a href="#alerts" class="nav-item group">
+					<span class="flex items-center gap-4 flex-1">
+						<span class="nav-icon">
+							<i class="fas fa-bell text-lg"></i>
+						</span>
+						<span class="nav-label">Alerts</span>
+					</span>
+					<i class="fas fa-chevron-right"></i>
 				</a>
-				<a href="#reports" class="rounded-xl px-4 py-3 transition-all duration-300 hover:bg-white hover:text-brand-600 hover:shadow-md dark:hover:bg-slate-800/80 nav-item">
-					<div class="flex items-center gap-3">
-						<span class="nav-icon"><i class="fas fa-chart-line text-sm"></i></span>
-						<span class="nav-label ml-3">Reports</span>
-					</div>
+
+				<!-- Reports Item -->
+				<a href="#reports" class="nav-item group">
+					<span class="flex items-center gap-4 flex-1">
+						<span class="nav-icon">
+							<i class="fas fa-chart-line text-lg"></i>
+						</span>
+						<span class="nav-label">Reports</span>
+					</span>
+					<i class="fas fa-chevron-right"></i>
 				</a>
 			</nav>
-			<!-- Theme Customization Card -->
-			<div class="mt-auto rounded-2xl p-6 text-slate-800 dark:text-slate-100 glass-card">
-				<p class="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Theme</p>
-				<h3 class="mt-1 text-lg font-bold">Customize Colors</h3>
-				<p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Choose an accent color for your dashboard.</p>
-				<div class="mt-4 grid grid-cols-6 gap-2" id="themeSwatches">
-					<button class="h-8 w-8 rounded-full ring-1 ring-black/5" style="background:#6366f1" data-theme="purple" title="Purple"></button>
-					<button class="h-8 w-8 rounded-full ring-1 ring-black/5" style="background:#3b82f6" data-theme="blue" title="Blue"></button>
-					<button class="h-8 w-8 rounded-full ring-1 ring-black/5" style="background:#10b981" data-theme="green" title="Green"></button>
-					<button class="h-8 w-8 rounded-full ring-1 ring-black/5" style="background:#ef4444" data-theme="red" title="Red"></button>
-					<button class="h-8 w-8 rounded-full ring-1 ring-black/5" style="background:#8b5cf6" data-theme="violet" title="Violet"></button>
-					<button class="h-8 w-8 rounded-full ring-1 ring-black/5" style="background:#64748b" data-theme="grey" title="Grey"></button>
-				</div>
-				<div class="mt-4 text-xs text-slate-600 dark:text-slate-300">Current: <span id="currentTheme" class="font-semibold">Purple</span></div>
-			</div>
 		</aside>
 
 		<div class="flex flex-1 flex-col">
-			<header class="glass-card flex flex-col gap-4 border-b border-slate-200/60 px-6 py-5 shadow-sm dark:border-slate-800/80">
-				<div class="flex flex-wrap items-center justify-between gap-4">
+			<!-- Modern Redesigned Navbar Header -->
+			<header class="sticky top-0 z-40 border-b border-slate-200/40 bg-white/70 backdrop-blur-2xl shadow-sm dark:border-slate-800/60 dark:bg-slate-950/50">
+				<div class="flex items-center justify-between px-6 py-4 gap-6">
+					<!-- Left Section: Back Button & Branding -->
 					<div class="flex items-center gap-4">
-						<button id="backHomeBtn" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200" aria-label="Back to homepage">
-							<i class="fas fa-arrow-left text-sm"></i>
+						<button id="backHomeBtn" class="navbar-back-btn group inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200/60 bg-white/40 px-3 py-2.5 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100/80 hover:border-slate-300 hover:shadow-md active:scale-95 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-800/60" aria-label="Back to homepage">
+							<i class="fas fa-arrow-left text-xs transition-transform duration-300 group-hover:-translate-x-1"></i>
 							<span class="hidden sm:inline">Back</span>
 						</button>
-						<div>
-							<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome back, {{ user.first_name|default:user.username }}</h2>
-							<p class="text-sm text-slate-500 dark:text-slate-400">Here's what is happening with attendance today.</p>
+						<div class="h-8 w-px bg-gradient-to-b from-slate-200/0 via-slate-300/50 to-slate-200/0 dark:via-slate-600/50"></div>
+						<div class="hidden md:flex flex-col">
+							<p class="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">CampusTrack</p>
+							<h1 class="text-sm font-bold text-slate-900 dark:text-white">Control Center</h1>
 						</div>
 					</div>
-					<div class="flex flex-wrap items-center gap-3">
 
-						<button id="logAttendanceBtn" class="inline-flex items-center gap-2 rounded-full accent-gradient-r px-4 py-2 text-sm font-semibold text-white shadow-soft transition-all duration-300 hover:shadow-lg" data-ripple-light="true">
-							<i class="fas fa-calendar-day text-xs"></i> Log Attendance
-						</button>
-						<div class="flex items-center gap-3 rounded-full border border-slate-200 bg-white/70 px-3 py-2 shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900">
-                            <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=256&q=80" alt="Avatar of a man" class="h-10 w-10 rounded-full object-cover border-2 border-white shadow" />
-							<div class="leading-tight">
-								<p class="text-sm font-semibold text-slate-700 dark:text-white">{{ user.get_full_name|default:user.username }}</p>
-								<span class="text-xs text-slate-500 dark:text-slate-400">Administrator</span>
-							</div>
-							<i class="fas fa-chevron-down text-xs text-slate-400"></i>
+					<!-- Center Section: Welcome Message & Status -->
+					<div class="hidden md:flex flex-1 flex-col px-4">
+						<div class="flex items-baseline gap-2">
+							<h2 class="text-lg font-bold text-slate-900 dark:text-white">Welcome, <span class="bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">{{ user.first_name|default:user.username }}</span></h2>
+							<span class="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-semibold text-green-600 dark:text-green-400">
+								<span class="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+								Live
+							</span>
 						</div>
+						<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">System Status: <span class="font-semibold text-slate-700 dark:text-slate-200">All Systems Operational</span></p>
+					</div>
+
+					<!-- Right Section: Actions & Profile -->
+					<div class="flex items-center gap-3">
+						<!-- Attendance CTA Button -->
+						<button id="logAttendanceBtn" class="navbar-cta-btn group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-brand-500/40 hover:scale-105 active:scale-95 dark:shadow-brand-500/20 dark:hover:shadow-brand-500/30" data-ripple-light="true">
+							<i class="fas fa-calendar-check text-xs transition-transform duration-300 group-hover:scale-110"></i>
+							<span class="hidden sm:inline">Log Attendance</span>
+						</button>
+
+						<!-- Notification Bell -->
+						<button id="notificationBtn" class="navbar-notification-btn relative inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200/60 bg-white/40 px-3 py-2.5 text-slate-600 transition-all duration-300 hover:bg-slate-100/80 hover:border-slate-300 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-slate-800/60 group" aria-label="Notifications">
+							<i class="fas fa-bell text-sm transition-transform duration-300 group-hover:scale-110"></i>
+							<span class="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
+						</button>
+
+						<!-- Profile Dropdown -->
+						<div class="navbar-profile-dropdown relative">
+							<button id="profileToggleBtn" class="profile-toggle-btn inline-flex items-center gap-2.5 rounded-xl border border-slate-200/60 bg-white/40 px-2.5 py-2 transition-all duration-300 hover:bg-slate-100/80 hover:border-slate-300 hover:shadow-md dark:border-slate-700/60 dark:bg-slate-900/40 dark:hover:bg-slate-800/60 group" aria-label="Profile menu" aria-expanded="false">
+								<img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=256&q=80" alt="Profile avatar" class="h-9 w-9 rounded-lg object-cover border border-slate-200 shadow-sm dark:border-slate-700 transition-transform duration-300 group-hover:scale-110" />
+								<div class="hidden lg:flex flex-col leading-tight">
+									<p class="text-sm font-semibold text-slate-900 dark:text-white">{{ user.get_full_name|default:user.username }}</p>
+									<span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Admin</span>
+								</div>
+								<i class="fas fa-chevron-down text-xs text-slate-400 transition-transform duration-300 group-hover:text-slate-600 dark:group-hover:text-slate-300"></i>
+							</button>
+
+							<!-- Profile Dropdown Menu -->
+							<div id="profileDropdown" class="profile-dropdown-menu absolute right-0 top-full mt-2 w-56 rounded-xl border border-slate-200/60 bg-white/95 backdrop-blur-xl shadow-xl opacity-0 invisible transition-all duration-300 dark:border-slate-800/60 dark:bg-slate-900/95 dark:shadow-2xl" style="transform: translateY(-8px) scale(0.95);">
+								<!-- Header -->
+								<div class="border-b border-slate-200/50 px-4 py-2 dark:border-slate-800/50">
+									<p class="font-semibold text-slate-900 dark:text-white text-sm">{{ user.get_full_name|default:user.username }}</p>
+									<p class="text-xs text-slate-500 dark:text-slate-400">{{ user.email }}</p>
+								</div>
+								<!-- Menu Items -->
+								<div class="space-y-0 p-1.5">
+									<button id="openProfileSettings" class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white">
+										<i class="fas fa-user-circle w-4 text-center text-slate-400"></i>
+										Profile Settings
+									</button>
+									<a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white">
+										<i class="fas fa-lock w-4 text-center text-slate-400"></i>
+										Change Password
+									</a>
+									<a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white">
+										<i class="fas fa-headset w-4 text-center text-slate-400"></i>
+										Help & Support
+									</a>
+								</div>
+								<!-- Divider -->
+								<div class="border-t border-slate-200/50 dark:border-slate-800/50"></div>
+								<!-- Logout -->
+								<div class="p-1.5">
+									<a href="/api/logout/" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors duration-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20 dark:hover:text-red-300">
+										<i class="fas fa-sign-out-alt w-4 text-center"></i>
+										Logout
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Status Bar -->
+				<div class="flex items-center justify-between border-t border-slate-200/30 px-6 py-2.5 text-xs text-slate-600 dark:border-slate-800/50 dark:text-slate-400 bg-gradient-to-r from-slate-50/50 to-transparent dark:from-slate-900/30">
+					<div class="flex items-center gap-4">
+						<div class="flex items-center gap-1.5">
+							<span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+							<span class="font-medium">System Online</span>
+						</div>
+						<div class="hidden md:flex items-center gap-1.5">
+							<span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+							<span>Camera Active</span>
+						</div>
+					</div>
+					<div class="flex items-center gap-2">
+						<i class="fas fa-circle-info text-slate-400"></i>
+						<span id="navbarTimestamp">00:00 AM</span>
 					</div>
 				</div>
 			</header>
 
 			<main class="relative flex-1 space-y-10 px-6 py-10">
 				<section class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-				<article class="metric-card glass-card group relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out slide-in-left">
+				<article class="metric-card glass-card group relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out slide-in-left" data-tooltip="Current attendance percentage">
 					<div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand-100/80 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
 					<div class="flex items-center justify-between">
-						<div>
-							<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Attendance Rate</p>
+						<div class="flex-1">
+							<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 flex items-center gap-2">
+								Attendance Rate
+								<span class="live-indicator"></span>
+							</p>
 							<h3 id="attendanceRate" class="stat-number mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
+							<div class="progress-bar mt-3">
+								<div class="progress-fill" id="attendanceProgress" style="width: 0%"></div>
+							</div>
 						</div>
-						<span class="floating flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-soft">
-							<i class="fas fa-user-check"></i>
+						<span class="floating flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-soft">
+							<i class="fas fa-user-check text-lg"></i>
 						</span>
 					</div>
 					<p class="mt-4 flex items-center gap-2 text-xs font-medium text-slate-500"><i class="fas fa-users"></i> <span id="todayAttendance">—</span> students today</p>
-				</article>				<article class="metric-card glass-card relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out slide-in-left" style="animation-delay: 0.1s;">
+				</article>
+				
+				<article class="metric-card glass-card group relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out slide-in-left" style="animation-delay: 0.1s;" data-tooltip="Active classroom sessions">
 					<div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-sky-100/80 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
 					<div class="flex items-center justify-between">
-						<div>
-							<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Classes in Session</p>
+						<div class="flex-1">
+							<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 flex items-center gap-2">
+								Classes in Session
+								<span class="live-indicator"></span>
+							</p>
 							<h3 id="classesInSession" class="stat-number mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
+							<span class="status-badge success mt-3 inline-flex text-xs px-2 py-1">
+								<i class="fas fa-check-circle"></i> Active
+							</span>
 						</div>
-						<span class="floating flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-soft" style="animation-delay: 0.5s;">
-							<i class="fas fa-door-open"></i>
+						<span class="floating flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-soft" style="animation-delay: 0.5s;">
+							<i class="fas fa-door-open text-lg"></i>
 						</span>
 					</div>
 					<p class="mt-4 flex items-center gap-2 text-xs font-medium text-sky-500"><i class="fas fa-circle"></i> Live updates</p>
-				</article>				<article class="metric-card glass-card relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out slide-in-right" style="animation-delay: 0.2s;">
+				</article>
+				
+				<article class="metric-card glass-card group relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out slide-in-right" style="animation-delay: 0.2s;" data-tooltip="On-time arrival percentage">
 					<div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-100/80 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
 					<div class="flex items-center justify-between">
-						<div>
+						<div class="flex-1">
 							<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Average Punctuality</p>
 							<h3 id="punctualityRate" class="stat-number mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
+							<div class="progress-bar mt-3">
+								<div class="progress-fill" id="punctualityProgress" style="width: 0%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+							</div>
 						</div>
-						<span class="floating flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-soft" style="animation-delay: 1s;">
-							<i class="fas fa-clock"></i>
+						<span class="floating flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-soft" style="animation-delay: 1s;">
+							<i class="fas fa-clock text-lg"></i>
 						</span>
 					</div>
 					<p class="mt-4 flex items-center gap-2 text-xs font-medium text-emerald-500"><i class="fas fa-check-circle"></i> <span id="onTimeCount">—</span> on-time arrivals</p>
-				</article>					<article class="metric-card glass-card relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out fade-in" style="animation-delay: 0.3s;">
-						<div class="absolute -right-12 -top-10 h-32 w-32 rounded-full bg-rose-100/80 blur-2xl"></div>
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Unknown Faces</p>
-								<h3 id="unknownCount" class="mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
-							</div>
-							<span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-soft">
-								<i class="fas fa-user-secret"></i>
+				</article>
+				
+				<article class="metric-card glass-card group relative overflow-hidden rounded-3xl px-6 py-6 transition-all duration-300 ease-out slide-in-right" style="animation-delay: 0.3s;" data-tooltip="Unrecognized faces detected">
+					<div class="absolute -right-12 -top-10 h-32 w-32 rounded-full bg-rose-100/80 blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
+					<div class="flex items-center justify-between">
+						<div class="flex-1">
+							<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Unknown Faces</p>
+							<h3 id="unknownCount" class="stat-number mt-3 text-3xl font-bold text-slate-900 dark:text-white">—</h3>
+							<span class="status-badge danger mt-3 inline-flex text-xs px-2 py-1" id="unknownBadge" style="display: none;">
+								<i class="fas fa-exclamation-triangle"></i> Alert
 							</span>
 						</div>
-						<p class="mt-4 flex items-center gap-2 text-xs font-medium text-rose-500"><i class="fas fa-triangle-exclamation"></i> Detected today</p>
-					</article>
+						<span class="floating flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-soft" style="animation-delay: 1.5s;">
+							<i class="fas fa-user-secret text-lg"></i>
+						</span>
+					</div>
+					<p class="mt-4 flex items-center gap-2 text-xs font-medium text-rose-500"><i class="fas fa-triangle-exclamation"></i> Detected today</p>
+				</article>
 				</section>
 
 				<section id="attendance" class="grid gap-6 lg:grid-cols-3">
-					<div class="glass-card rounded-3xl p-6 shadow-soft lg:col-span-2 fade-in" style="animation-delay: 0.4s;">
-						<header class="flex items-center justify-between">
-							<div>
-								<h3 class="text-lg font-bold text-slate-900 dark:text-white">Weekly Attendance Trend</h3>
-								<p class="text-xs text-slate-500 dark:text-slate-400">Updated 15 minutes ago</p>
-							</div>
-							<div class="flex items-center gap-3">
-								<div class="flex items-center gap-2 text-xs text-slate-500">
-									<button id="btnWeek" class="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-500 transition-all duration-300 hover:accent-border hover:text-slate-700 dark:border-slate-700 dark:text-slate-300">Week</button>
-									<button id="btnMonth" class="rounded-full border border-transparent accent-gradient-r px-3 py-1 font-semibold text-white shadow-soft" data-ripple-light="true">Month</button>
-								</div>
-								<div class="ml-4 flex items-center gap-2">
-									<div class="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm dark:bg-slate-800/70 dark:text-white">
-										Total Attendees: <span id="attendanceTotal">—</span>
+					<div class="glass-card rounded-3xl p-8 shadow-soft lg:col-span-2 fade-in" style="animation-delay: 0.4s;">
+						<header class="flex items-center justify-between pb-6 border-b border-slate-200/40 dark:border-zinc-900/60">
+							<div class="flex-1">
+								<div class="flex items-center gap-3">
+									<div class="p-2 rounded-lg bg-brand-500/10 dark:bg-brand-500/20">
+										<i class="fas fa-chart-line text-brand-600 dark:text-brand-400"></i>
 									</div>
-									<div class="rounded-full bg-rose-50/90 px-3 py-1 text-xs font-semibold text-rose-600 shadow-sm dark:bg-rose-900/20 dark:text-rose-200">
-										Active Alerts: <span id="alertsTotal">—</span>
+									<h3 class="text-xl font-bold bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">Weekly Attendance Trend</h3>
+									<span class="live-indicator"></span>
+								</div>
+								<p class="text-xs text-slate-500 dark:text-slate-400 mt-2 ml-11">Updated 15 minutes ago • Real-time Analytics</p>
+							</div>
+							<div class="flex items-center gap-4">
+								<div class="flex items-center gap-2">
+									<!-- <button id="btnWeek" class="rounded-full border border-slate-200/40 px-4 py-2 font-semibold text-slate-600 transition-all duration-300 hover:border-brand-500/40 hover:text-brand-600 dark:border-zinc-800/60 dark:text-slate-300 dark:hover:text-brand-300 group">
+										<i class="fas fa-calendar-week mr-2 opacity-60 group-hover:opacity-100"></i> Week
+									</button> -->
+									<button id="btnMonth" class="rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-4 py-2 font-semibold text-white shadow-lg shadow-brand-500/30 hover:shadow-xl transition-all duration-300 hover:scale-105" data-ripple-light="true">
+										<i class="fas fa-calendar-alt mr-2 opacity-90"></i> Month
+									</button>
+								</div>
+								<div class="flex items-center gap-3 pl-4 border-l border-slate-200/40 dark:border-zinc-900/60">
+									<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20">
+										<i class="fas fa-users text-emerald-600 dark:text-emerald-400"></i>
+										<span class="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Total: <span id="attendanceTotal">—</span></span>
+									</div>
+									<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/10 dark:bg-rose-500/20">
+										<i class="fas fa-bell text-rose-600 dark:text-rose-400"></i>
+										<span class="text-sm font-semibold text-rose-700 dark:text-rose-300">Alerts: <span id="alertsTotal">—</span></span>
 									</div>
 								</div>
 							</div>
 						</header>
-						<div class="mt-6 w-full rounded-2xl chart-container p-4 bg-white/70 border border-slate-100 shadow-sm dark:bg-slate-900/60 dark:border-slate-800">
+						<div class="mt-8 w-full rounded-2xl p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-zinc-900/60 dark:to-black border border-slate-200/40 dark:border-zinc-900/60 shadow-sm">
 							<div class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
 								<div class="col-span-2 h-72 w-full rounded-2xl bg-transparent p-3">
 									<div class="h-full w-full rounded-xl bg-gradient-to-tr from-white/80 to-brand-50/60 p-3 border border-dashed border-slate-100/60 dark:border-slate-700/40">
@@ -517,78 +1053,99 @@
 							</div>
 							
 							<!-- Statistics Cards Below Charts -->
-							<div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-								<div class="rounded-xl border border-slate-200/60 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4 dark:border-slate-800 dark:from-emerald-900/20 dark:to-emerald-800/10">
-									<p class="text-xs uppercase text-slate-600 dark:text-slate-400">Weekly Average</p>
-									<p class="mt-2 text-2xl font-bold text-emerald-700 dark:text-emerald-400" id="weeklyAverage">—</p>
-									<p class="mt-1 text-xs text-slate-500 dark:text-slate-400">students/day</p>
+							<div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+								<div class="group rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-5 transition-all hover:shadow-lg dark:border-emerald-900/40 dark:from-emerald-900/20 dark:to-emerald-800/10 hover:-translate-y-1">
+									<div class="flex items-center justify-between mb-3">
+										<p class="text-xs uppercase font-semibold tracking-wide text-emerald-700 dark:text-emerald-300">Weekly Average</p>
+										<i class="fas fa-chart-area text-emerald-500/60 group-hover:text-emerald-600 transition"></i>
+									</div>
+									<p class="text-3xl font-bold text-emerald-700 dark:text-emerald-400" id="weeklyAverage">—</p>
+									<p class="mt-2 text-xs text-emerald-600 dark:text-emerald-300">students/day</p>
 								</div>
-								<div class="rounded-xl border border-slate-200/60 bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 dark:border-slate-800 dark:from-blue-900/20 dark:to-blue-800/10">
-									<p class="text-xs uppercase text-slate-600 dark:text-slate-400">Peak Day</p>
-									<p class="mt-2 text-2xl font-bold text-blue-700 dark:text-blue-400" id="peakDay">—</p>
-									<p class="mt-1 text-xs text-slate-500 dark:text-slate-400" id="peakDayCount">— students</p>
+								<div class="group rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 to-blue-100/50 p-5 transition-all hover:shadow-lg dark:border-blue-900/40 dark:from-blue-900/20 dark:to-blue-800/10 hover:-translate-y-1">
+									<div class="flex items-center justify-between mb-3">
+										<p class="text-xs uppercase font-semibold tracking-wide text-blue-700 dark:text-blue-300">Peak Day</p>
+										<i class="fas fa-arrow-up text-blue-500/60 group-hover:text-blue-600 transition"></i>
+									</div>
+									<p class="text-3xl font-bold text-blue-700 dark:text-blue-400" id="peakDay">—</p>
+									<p class="mt-2 text-xs text-blue-600 dark:text-blue-300" id="peakDayCount">— students</p>
 								</div>
-								<div class="rounded-xl border border-slate-200/60 bg-gradient-to-br from-rose-50 to-rose-100/50 p-4 dark:border-slate-800 dark:from-rose-900/20 dark:to-rose-800/10">
-									<p class="text-xs uppercase text-slate-600 dark:text-slate-400">Lowest Day</p>
-									<p class="mt-2 text-2xl font-bold text-rose-700 dark:text-rose-400" id="lowestDay">—</p>
-									<p class="mt-1 text-xs text-slate-500 dark:text-slate-400" id="lowestDayCount">— students</p>
+								<div class="group rounded-2xl border border-rose-200/60 bg-gradient-to-br from-rose-50 to-rose-100/50 p-5 transition-all hover:shadow-lg dark:border-rose-900/40 dark:from-rose-900/20 dark:to-rose-800/10 hover:-translate-y-1">
+									<div class="flex items-center justify-between mb-3">
+										<p class="text-xs uppercase font-semibold tracking-wide text-rose-700 dark:text-rose-300">Lowest Day</p>
+										<i class="fas fa-arrow-down text-rose-500/60 group-hover:text-rose-600 transition"></i>
+									</div>
+									<p class="text-3xl font-bold text-rose-700 dark:text-rose-400" id="lowestDay">—</p>
+									<p class="mt-2 text-xs text-rose-600 dark:text-rose-300" id="lowestDayCount">— students</p>
 								</div>
 								
-								<div class="rounded-xl border border-slate-200/60 bg-gradient-to-br from-amber-50 to-amber-100/50 p-4 dark:border-slate-800 dark:from-amber-900/20 dark:to-amber-800/10">
-									<p class="text-xs uppercase text-slate-600 dark:text-slate-400">Trend</p>
-									<p class="mt-2 text-2xl font-bold text-amber-700 dark:text-amber-400" id="trendPercent">—</p>
-									<p class="mt-1 text-xs text-slate-500 dark:text-slate-400" id="trendLabel">no change</p>
+								<div class="group rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 to-amber-100/50 p-5 transition-all hover:shadow-lg dark:border-amber-900/40 dark:from-amber-900/20 dark:to-amber-800/10 hover:-translate-y-1">
+									<div class="flex items-center justify-between mb-3">
+										<p class="text-xs uppercase font-semibold tracking-wide text-amber-700 dark:text-amber-300">Trend</p>
+										<i class="fas fa-chart-line text-amber-500/60 group-hover:text-amber-600 transition"></i>
+									</div>
+									<p class="text-3xl font-bold text-amber-700 dark:text-amber-400" id="trendPercent">—</p>
+									<p class="mt-2 text-xs text-amber-600 dark:text-amber-300" id="trendLabel">no change</p>
 								</div>
 							</div>
 						</div>
 					</div>
 
-					<div class="glass-card flex flex-col rounded-3xl p-6 shadow-soft fade-in" style="animation-delay: 0.5s;">
-						<header class="flex items-center justify-between">
-							<div>
-								<h3 class="text-lg font-bold text-slate-900 dark:text-white">Top Classes by Attendance</h3>
-								<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Last 30 days</p>
-							</div>
-							<span class="rounded-full px-3 py-1 text-xs font-semibold accent-chip">History</span>
-						</header>
-						<ul id="topClassesList" class="mt-6 space-y-5 text-sm">
-							<li class="flex items-center justify-center py-8 text-slate-400">
-								<i class="fas fa-spinner fa-spin mr-2"></i> Loading...
-							</li>
-						</ul>
-						
-						<!-- Class History Cards Grid -->
-						<div id="classHistoryCards" class="mt-8 grid grid-cols-2 gap-3">
-							<div class="flex items-center justify-center py-6 text-slate-400 col-span-2">
-								<i class="fas fa-spinner fa-spin mr-2"></i> Loading history...
-							</div>
+				<div class="glass-card flex flex-col rounded-3xl p-8 shadow-soft fade-in" style="animation-delay: 0.5s;">
+					<!-- Header with enhanced styling -->
+					<header class="flex items-center justify-between pb-6 border-b border-slate-200/40 dark:border-zinc-900/60">
+						<div>
+							<h3 class="text-xl font-bold bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">Top Classes by Attendance</h3>
+							<p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Performance over last 30 days</p>
 						</div>
-						
-						<button id="viewClassHistoryBtn" class="mt-6 inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-brand-500 hover:text-brand-600 transition dark:border-slate-700 dark:text-slate-300">
-							<i class="fas fa-chart-line mr-1"></i> View Detailed History
+						<button class="rounded-full px-4 py-2 text-xs font-semibold bg-brand-500/10 text-brand-600 hover:bg-brand-500/20 transition-colors dark:bg-brand-500/20 dark:text-brand-300">
+							<i class="fas fa-history mr-1"></i> History
 						</button>
+					</header>
+
+					<!-- Main Class Card -->
+					<div id="topClassesList" class="mt-8 space-y-4">
+						<li class="flex items-center justify-center py-12 text-slate-400 dark:text-slate-500">
+							<i class="fas fa-spinner fa-spin mr-3"></i> Loading...
+						</li>
+					</div>					<!-- Class History Cards Grid -->
+					<div id="classHistoryCards" class="mt-8 grid grid-cols-2 gap-4">
+						<div class="flex items-center justify-center py-8 text-slate-400 dark:text-slate-500 col-span-2">
+							<i class="fas fa-spinner fa-spin mr-3"></i> Loading history...
+						</div>
 					</div>
+					
+					<!-- View Details Button -->
+					<button id="viewClassHistoryBtn" class="mt-8 inline-flex items-center justify-center gap-2 rounded-xl border border-brand-500/30 px-6 py-3 text-sm font-semibold text-brand-600 hover:bg-brand-500/10 transition-all duration-300 dark:border-brand-500/40 dark:text-brand-300 dark:hover:bg-brand-500/15 group">
+						<i class="fas fa-chart-line transition-transform group-hover:scale-110"></i> 
+						View Detailed History
+						<i class="fas fa-arrow-right text-xs transition-transform group-hover:translate-x-1"></i>
+					</button>
+				</div>
 				</section>
 
 				<section id="classes" class="grid gap-6 xl:grid-cols-3">
-					<div class="glass-card rounded-3xl p-6 shadow-soft xl:col-span-2 fade-in" style="animation-delay: 0.6s;">
-						<header class="flex items-center justify-between">
-							<div>
-								<h3 class="text-lg font-bold text-slate-900 dark:text-white">Live Classroom Status</h3>
-								<p class="text-xs text-slate-500 dark:text-slate-400">Auto-refreshed every 5 seconds.</p>
+				<div class="glass-card rounded-3xl p-8 shadow-soft xl:col-span-2 fade-in" style="animation-delay: 0.6s;">
+					<header class="flex items-center justify-between pb-6 border-b border-slate-200/40 dark:border-zinc-900/60">
+						<div>
+							<div class="flex items-center gap-3">
+								<div class="p-2 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20">
+									<i class="fas fa-video text-emerald-600 dark:text-emerald-400"></i>
+								</div>
+								<h3 class="text-xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">Live Classroom Status</h3>
 							</div>
-							<span class="rounded-full px-3 py-1 text-xs font-semibold accent-chip animate-pulse">
-								<i class="fas fa-circle text-emerald-500 mr-1"></i> Live
-							</span>
-						</header>
-						<div id="liveClassroomStatus" class="mt-6 grid gap-4 md:grid-cols-2">
-							<div class="flex items-center justify-center py-12 text-slate-400 col-span-2">
-								<i class="fas fa-spinner fa-spin mr-2"></i> Loading live data...
-							</div>
+							<p class="text-xs text-slate-500 dark:text-slate-400 mt-2 ml-11">Auto-refreshed every 5 seconds • Real-time monitoring</p>
+						</div>
+						<span class="rounded-full px-4 py-2 text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300 animate-pulse flex items-center gap-2">
+							<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span> Live
+						</span>
+					</header>
+					<div id="liveClassroomStatus" class="mt-8 grid gap-4 md:grid-cols-2">
+						<div class="flex items-center justify-center py-12 text-slate-400 dark:text-slate-500 col-span-2">
+							<i class="fas fa-spinner fa-spin mr-3"></i> Loading live data...
 						</div>
 					</div>
-
-					<div class="glass-card flex flex-col justify-between rounded-3xl p-6 shadow-soft fade-in" style="animation-delay: 0.7s;">
+				</div>					<div class="glass-card flex flex-col justify-between rounded-3xl p-6 shadow-soft fade-in" style="animation-delay: 0.7s;">
 						<header class="flex items-center justify-between">
 							<h3 class="text-lg font-bold text-slate-900 dark:text-white">Recent Check-ins</h3>
 							<span class="rounded-full px-3 py-1 text-xs font-semibold accent-chip">Live</span>
@@ -1349,18 +1906,51 @@ function getCSRFToken(){
 			});
 			const data = await response.json();
 
-			// Update stats cards
-			document.getElementById('attendanceRate').textContent = `${data.attendance_rate}%`;
-			document.getElementById('todayAttendance').textContent = data.today_attendance;
-			document.getElementById('classesInSession').textContent = data.classes_in_session;
-			document.getElementById('punctualityRate').textContent = `${data.punctuality}%`;
-			document.getElementById('onTimeCount').textContent = data.on_time_count;
-			document.getElementById('unknownCount').textContent = data.unknown_count;
+		// Update stats cards
+		document.getElementById('attendanceRate').textContent = `${data.attendance_rate}%`;
+		document.getElementById('todayAttendance').textContent = data.today_attendance;
+		document.getElementById('classesInSession').textContent = data.classes_in_session;
+		document.getElementById('punctualityRate').textContent = `${data.punctuality}%`;
+		document.getElementById('onTimeCount').textContent = data.on_time_count;
+		document.getElementById('unknownCount').textContent = data.unknown_count;
 
-			// Update weekly attendance chart
-			updateAttendanceChart(data.weekly_data);
+		// Update progress bars with animation
+		const attendanceProgress = document.getElementById('attendanceProgress');
+		if (attendanceProgress) {
+			setTimeout(() => {
+				attendanceProgress.style.width = `${data.attendance_rate}%`;
+			}, 100);
+		}
+		
+		const punctualityProgress = document.getElementById('punctualityProgress');
+		if (punctualityProgress) {
+			setTimeout(() => {
+				punctualityProgress.style.width = `${data.punctuality}%`;
+			}, 200);
+		}
 
-			// Update pie chart
+		// Show/hide unknown faces badge
+		const unknownBadge = document.getElementById('unknownBadge');
+		if (unknownBadge && data.unknown_count > 0) {
+			unknownBadge.style.display = 'inline-flex';
+		} else if (unknownBadge) {
+			unknownBadge.style.display = 'none';
+		}
+
+		// Update hero stats
+		const heroToday = document.getElementById('heroTodayAttendance');
+		if (heroToday) heroToday.textContent = data.today_attendance;
+		const heroRate = document.getElementById('heroAttendanceRate');
+		if (heroRate) heroRate.textContent = `${data.attendance_rate}%`;
+		const heroClasses = document.getElementById('heroClasses');
+		if (heroClasses) heroClasses.textContent = data.classes_in_session;
+		const heroUnknown = document.getElementById('heroUnknownFaces');
+		if (heroUnknown) heroUnknown.textContent = data.unknown_count;
+		const heroPunctuality = document.getElementById('heroPunctuality');
+		if (heroPunctuality) heroPunctuality.textContent = `${data.punctuality}%`;
+
+		// Update weekly attendance chart
+		updateAttendanceChart(data.weekly_data);			// Update pie chart
 			updatePieChart(data.on_time_count, data.late_count);
 
 			// Update top classes
@@ -2739,6 +3329,530 @@ document.querySelectorAll('.metric-card').forEach(card => {
 		card.style.transform = '';
 	});
 });
+
+// Tooltip functionality
+const tooltipElements = document.querySelectorAll('[data-tooltip]');
+tooltipElements.forEach(el => {
+	el.addEventListener('mouseenter', (e) => {
+		const tooltip = document.createElement('div');
+		tooltip.className = 'tooltip show';
+		tooltip.textContent = el.getAttribute('data-tooltip');
+		tooltip.id = 'active-tooltip';
+		
+		document.body.appendChild(tooltip);
+		
+		const rect = el.getBoundingClientRect();
+		tooltip.style.left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2 + 'px';
+		tooltip.style.top = rect.bottom + 10 + 'px';
+	});
+	
+	el.addEventListener('mouseleave', () => {
+		const tooltip = document.getElementById('active-tooltip');
+		if (tooltip) tooltip.remove();
+	});
+});
+
+// Add click animation to stat numbers
+document.querySelectorAll('.stat-number').forEach(stat => {
+	stat.addEventListener('click', function() {
+		this.style.transform = 'scale(1.2)';
+		setTimeout(() => {
+			this.style.transform = '';
+		}, 200);
+	});
+});
+
+// Interactive badge click handlers
+document.querySelectorAll('.status-badge').forEach(badge => {
+	badge.addEventListener('click', function() {
+		const badges = document.querySelectorAll('.status-badge');
+		badges.forEach(b => b.style.opacity = '0.5');
+		this.style.opacity = '1';
+		
+		setTimeout(() => {
+			badges.forEach(b => b.style.opacity = '1');
+		}, 1500);
+	});
+});
+
+// Enhanced card hover effects
+document.querySelectorAll('.metric-card').forEach(card => {
+	card.addEventListener('mouseenter', () => {
+		card.style.boxShadow = '0 30px 60px rgba(99, 102, 241, 0.25)';
+	});
+	card.addEventListener('mouseleave', () => {
+		card.style.boxShadow = '';
+	});
+});
+
+// Hero date + greeting updater
+(function() {
+	const dateEl = document.getElementById('heroDate');
+	const greetingEl = document.getElementById('heroGreeting');
+
+	function updateHeroHeader() {
+		if (dateEl) {
+			const now = new Date();
+			const dateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+			const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
+			dateEl.textContent = `${dateFormatter.format(now)} · ${timeFormatter.format(now)}`;
+		}
+
+		if (greetingEl) {
+			const hour = new Date().getHours();
+			let greeting = 'Hello';
+			if (hour < 12) greeting = 'Good morning';
+			else if (hour < 17) greeting = 'Good afternoon';
+			else greeting = 'Good evening';
+			greetingEl.textContent = greeting;
+		}
+	}
+
+	updateHeroHeader();
+	setInterval(updateHeroHeader, 60000);
+})();
+
+// ========================================
+// MODERN NAVBAR FUNCTIONALITY
+// ========================================
+(function() {
+	// Profile Dropdown Toggle
+	const profileToggleBtn = document.getElementById('profileToggleBtn');
+	const profileDropdown = document.getElementById('profileDropdown');
+	const profileDropdownBtn = document.querySelector('.profile-toggle-btn');
+
+	if (profileToggleBtn && profileDropdown) {
+		profileToggleBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			const isVisible = profileDropdown.classList.contains('visible');
+			
+			if (isVisible) {
+				profileDropdown.classList.remove('visible');
+				profileToggleBtn.setAttribute('aria-expanded', 'false');
+			} else {
+				profileDropdown.classList.add('visible');
+				profileToggleBtn.setAttribute('aria-expanded', 'true');
+			}
+		});
+
+		// Close on outside click
+		document.addEventListener('click', (e) => {
+			if (!e.target.closest('.navbar-profile-dropdown')) {
+				profileDropdown.classList.remove('visible');
+				profileToggleBtn.setAttribute('aria-expanded', 'false');
+			}
+		});
+	}
+
+	// Navbar timestamp updater
+	const navbarTimestamp = document.getElementById('navbarTimestamp');
+	if (navbarTimestamp) {
+		function updateTime() {
+			const now = new Date();
+			const timeFormatter = new Intl.DateTimeFormat('en-US', { 
+				hour: 'numeric', 
+				minute: '2-digit',
+				second: '2-digit',
+				hour12: true 
+			});
+			navbarTimestamp.textContent = timeFormatter.format(now);
+		}
+		
+		updateTime();
+		setInterval(updateTime, 1000);
+	}
+
+	// Back button functionality
+	const backHomeBtn = document.getElementById('backHomeBtn');
+	if (backHomeBtn) {
+		backHomeBtn.addEventListener('click', () => {
+			window.history.back();
+		});
+	}
+
+	// Notification button with animation
+	const notificationBtn = document.getElementById('notificationBtn');
+	if (notificationBtn) {
+		notificationBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			// Show notification toast or panel
+			showNotificationToast('You have 3 new notifications', 'info');
+		});
+
+		// Remove notification indicator on click (after 2 seconds)
+		setTimeout(() => {
+			const indicator = notificationBtn.querySelector('span.animate-pulse');
+			if (indicator) {
+				indicator.style.display = 'none';
+			}
+		}, 2000);
+	}
+
+	// Notification toast function
+	function showNotificationToast(message, type = 'info') {
+		const toast = document.createElement('div');
+		toast.className = `fixed bottom-4 right-4 px-6 py-4 rounded-xl text-white shadow-lg z-50 flex items-center gap-3 ${
+			type === 'info' ? 'bg-blue-500' : 
+			type === 'success' ? 'bg-green-500' :
+			type === 'error' ? 'bg-red-500' :
+			'bg-slate-600'
+		} animate-bounce`;
+		
+		toast.innerHTML = `
+			<i class="fas fa-${
+				type === 'info' ? 'info-circle' :
+				type === 'success' ? 'check-circle' :
+				type === 'error' ? 'exclamation-circle' :
+				'bell'
+			}"></i>
+			<span>${message}</span>
+		`;
+		
+		document.body.appendChild(toast);
+		
+		setTimeout(() => {
+			toast.style.opacity = '0';
+			toast.style.transition = 'opacity 0.3s ease';
+			setTimeout(() => toast.remove(), 300);
+		}, 3000);
+	}
+
+	// Smooth navbar entrance animation
+	const navbar = document.querySelector('header');
+	if (navbar) {
+		navbar.style.animation = 'slideDownSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+		const style = document.createElement('style');
+		style.textContent = `
+			@keyframes slideDownSmooth {
+				from {
+					opacity: 0;
+					transform: translateY(-20px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+		`;
+		document.head.appendChild(style);
+	}
+
+	// Profile dropdown item hover effects
+	const dropdownItems = document.querySelectorAll('.profile-dropdown-menu a');
+	dropdownItems.forEach(item => {
+		item.addEventListener('mouseenter', function() {
+			this.style.background = 'rgba(99, 102, 241, 0.1)';
+		});
+		item.addEventListener('mouseleave', function() {
+			this.style.background = 'transparent';
+		});
+	});
+
+	// Navbar button ripple effects (if data-ripple-light is present)
+	document.querySelectorAll('[data-ripple-light]').forEach(button => {
+		button.addEventListener('click', function(e) {
+			const ripple = document.createElement('span');
+			const rect = this.getBoundingClientRect();
+			const size = Math.max(rect.width, rect.height);
+			const x = e.clientX - rect.left - size / 2;
+			const y = e.clientY - rect.top - size / 2;
+
+			ripple.style.width = ripple.style.height = size + 'px';
+			ripple.style.left = x + 'px';
+			ripple.style.top = y + 'px';
+			ripple.className = 'ripple-light';
+			ripple.style.position = 'absolute';
+			ripple.style.borderRadius = '50%';
+			ripple.style.background = 'rgba(255, 255, 255, 0.6)';
+			ripple.style.pointerEvents = 'none';
+			ripple.style.animation = 'rippleEffect 0.6s ease-out';
+
+			this.style.position = 'relative';
+			this.style.overflow = 'hidden';
+			this.appendChild(ripple);
+
+			setTimeout(() => ripple.remove(), 600);
+		});
+	});
+
+	// Active page indicator (if multiple pages)
+	const currentPath = window.location.pathname;
+	document.querySelectorAll('.profile-dropdown-menu a').forEach(link => {
+		if (link.getAttribute('href') === currentPath) {
+			link.style.background = 'rgba(99, 102, 241, 0.15)';
+			link.style.color = 'var(--brand-600)';
+		}
+	});
+
+	// Keyboard shortcut: Cmd/Ctrl + Shift + P to open profile
+	document.addEventListener('keydown', (e) => {
+		if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
+			e.preventDefault();
+			if (profileToggleBtn) {
+				profileToggleBtn.click();
+			}
+		}
+	});
+
+	// Keyboard shortcut: Esc to close dropdown
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && profileDropdown) {
+			profileDropdown.classList.remove('visible');
+			profileToggleBtn.setAttribute('aria-expanded', 'false');
+		}
+	});
+
+	// Navbar scroll behavior (optional: add subtle shadow on scroll)
+	window.addEventListener('scroll', () => {
+		if (navbar) {
+			if (window.scrollY > 10) {
+				navbar.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
+			} else {
+				navbar.style.boxShadow = '';
+			}
+		}
+	}, { passive: true });
+
+	// Accessibility: Announce navbar changes
+	const navbar_status = document.createElement('div');
+	navbar_status.setAttribute('role', 'status');
+	navbar_status.setAttribute('aria-live', 'polite');
+	navbar_status.setAttribute('aria-atomic', 'true');
+	navbar_status.className = 'sr-only';
+	document.body.appendChild(navbar_status);
+})();
+
+// Navbar ripple effect styles
+const navbarRippleStyle = document.createElement('style');
+navbarRippleStyle.textContent = `
+	@keyframes rippleEffect {
+		to {
+			transform: scale(4);
+			opacity: 0;
+		}
+	}
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border-width: 0;
+	}
+`;
+document.head.appendChild(navbarRippleStyle);
+</script>
+
+<!-- Profile Settings Modal -->
+<div id="profileSettingsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+	<!-- Backdrop -->
+	<div id="profileSettingsBackdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"></div>
+	
+	<!-- Modal Content -->
+	<div class="relative max-w-2xl w-full mx-4 max-h-screen overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-slate-900 dark:shadow-2xl">
+		<!-- Header -->
+		<div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200/50 bg-white px-8 py-6 dark:border-slate-800/50 dark:bg-slate-900">
+			<div>
+				<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Profile Settings</h2>
+				<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account and preferences</p>
+			</div>
+			<button id="closeProfileSettings" class="group rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+				<i class="fas fa-times text-xl"></i>
+			</button>
+		</div>
+
+		<!-- Content -->
+		<div class="px-8 py-6 space-y-6">
+			<!-- Profile Section -->
+			<div>
+				<h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+					<i class="fas fa-user text-brand-500"></i>
+					Profile Information
+				</h3>
+				<div class="space-y-3 bg-slate-50/50 dark:bg-slate-800/30 rounded-xl p-4">
+					<div class="flex items-start justify-between">
+						<div>
+							<p class="text-sm font-medium text-slate-600 dark:text-slate-400">Full Name</p>
+							<p class="text-base font-semibold text-slate-900 dark:text-white">{{ user.get_full_name|default:user.username }}</p>
+						</div>
+						<i class="fas fa-check text-green-500"></i>
+					</div>
+					<div class="h-px bg-slate-200/50 dark:bg-slate-700/50"></div>
+					<div>
+						<p class="text-sm font-medium text-slate-600 dark:text-slate-400">Email</p>
+						<p class="text-base font-semibold text-slate-900 dark:text-white break-all">{{ user.email }}</p>
+					</div>
+					<div class="h-px bg-slate-200/50 dark:bg-slate-700/50"></div>
+					<div>
+						<p class="text-sm font-medium text-slate-600 dark:text-slate-400">Account Type</p>
+						<p class="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+							<span class="inline-flex items-center gap-1 rounded-full bg-brand-100 px-3 py-1 text-xs font-bold text-brand-600 dark:bg-brand-900/30 dark:text-brand-400">
+								<i class="fas fa-shield"></i>
+								Admin
+							</span>
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Theme Customization Section -->
+			<div>
+				<h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+					<i class="fas fa-palette text-brand-500"></i>
+					Customize Theme
+				</h3>
+				<p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Choose an accent color for your dashboard</p>
+				<div class="grid grid-cols-6 gap-3 bg-slate-50/50 dark:bg-slate-800/30 rounded-xl p-4">
+					<button class="h-12 rounded-xl ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 ring-transparent transition-all duration-300 hover:scale-110 hover:ring-offset-4 shadow-md hover:shadow-lg" style="background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);" data-theme="purple" title="Purple"></button>
+					<button class="h-12 rounded-xl ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 ring-transparent transition-all duration-300 hover:scale-110 hover:ring-offset-4 shadow-md hover:shadow-lg" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);" data-theme="blue" title="Blue"></button>
+					<button class="h-12 rounded-xl ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 ring-transparent transition-all duration-300 hover:scale-110 hover:ring-offset-4 shadow-md hover:shadow-lg" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);" data-theme="green" title="Green"></button>
+					<button class="h-12 rounded-xl ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 ring-red-400 transition-all duration-300 hover:scale-110 hover:ring-offset-4 shadow-md hover:shadow-lg" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);" data-theme="red" title="Red"></button>
+					<button class="h-12 rounded-xl ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 ring-transparent transition-all duration-300 hover:scale-110 hover:ring-offset-4 shadow-md hover:shadow-lg" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);" data-theme="violet" title="Violet"></button>
+					<button class="h-12 rounded-xl ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 ring-transparent transition-all duration-300 hover:scale-110 hover:ring-offset-4 shadow-md hover:shadow-lg" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%);" data-theme="grey" title="Grey"></button>
+				</div>
+				<div class="mt-3 text-sm text-slate-600 dark:text-slate-400">Current: <span id="profileSettingsCurrentTheme" class="font-bold text-brand-600 dark:text-brand-400">Red</span></div>
+			</div>
+		</div>
+
+		<!-- Footer -->
+		<div class="border-t border-slate-200/50 bg-white px-8 py-4 dark:border-slate-800/50 dark:bg-slate-900">
+			<button id="closeProfileSettingsBtn" class="w-full rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:scale-105 active:scale-95">
+				Close Settings
+			</button>
+		</div>
+	</div>
+</div>
+
+<script>
+// Profile Settings Modal Management
+(function() {
+	const THEME_KEY = 'theme';
+	const modal = document.getElementById('profileSettingsModal');
+	const backdrop = document.getElementById('profileSettingsBackdrop');
+	const openBtn = document.getElementById('openProfileSettings');
+	const closeBtn = document.getElementById('closeProfileSettings');
+	const closeBottomBtn = document.getElementById('closeProfileSettingsBtn');
+	const profileDropdown = document.getElementById('profileDropdown');
+
+	// Theme color map
+	const themeMap = {
+		purple: { 500: '#a855f7', 600: '#9333ea', 700: '#7e22ce' },
+		blue: { 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+		green: { 500: '#10b981', 600: '#059669', 700: '#047857' },
+		red: { 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
+		violet: { 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9' },
+		grey: { 500: '#64748b', 600: '#475569', 700: '#334155' }
+	};
+
+	// Hex to RGB conversion
+	const hexToRgb = (hex) => {
+		const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		return m ? { r: parseInt(m[1],16), g: parseInt(m[2],16), b: parseInt(m[3],16) } : null;
+	};
+
+	// Apply theme to CSS variables
+	const applyThemeToDOM = (c) => {
+		const root = document.documentElement;
+		root.style.setProperty('--accent-500', c[500]);
+		root.style.setProperty('--accent-600', c[600]);
+		root.style.setProperty('--accent-700', c[700]);
+		const rgb = hexToRgb(c[500]);
+		if (rgb) root.style.setProperty('--accent-500-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+	};
+
+	// Initialize modal theme buttons on page load
+	const initThemeButtons = () => {
+		const savedTheme = localStorage.getItem(THEME_KEY) || 'red';
+		const modalThemeButtons = modal?.querySelectorAll('[data-theme]') || [];
+		
+		// Apply saved theme to DOM immediately
+		const c = themeMap[savedTheme] || themeMap.red;
+		applyThemeToDOM(c);
+		
+		// Set initial ring indicator for saved theme
+		modalThemeButtons.forEach(btn => {
+			if (btn.getAttribute('data-theme') === savedTheme) {
+				btn.classList.add('ring-offset-4');
+			}
+		});
+		
+		// Update current theme display
+		const themeNames = { purple: 'Purple', blue: 'Blue', green: 'Green', red: 'Red', violet: 'Violet', grey: 'Grey' };
+		const displayName = themeNames[savedTheme] || savedTheme;
+		const currentThemeEl = document.getElementById('profileSettingsCurrentTheme');
+		if (currentThemeEl) currentThemeEl.textContent = displayName;
+		
+		// Add click handlers
+		modalThemeButtons.forEach(btn => {
+			btn.addEventListener('click', () => {
+				const theme = btn.getAttribute('data-theme');
+				
+				// Remove all ring highlights
+				modalThemeButtons.forEach(b => b.classList.remove('ring-offset-4'));
+				// Add ring to clicked button
+				btn.classList.add('ring-offset-4');
+				
+				// Update theme display
+			const displayName = themeNames[theme] || theme;
+				if (currentThemeEl) currentThemeEl.textContent = displayName;
+				
+				// Apply the theme
+				const c = themeMap[theme] || themeMap.purple;
+				applyThemeToDOM(c);
+				localStorage.setItem(THEME_KEY, theme);
+			});
+		});
+	};
+
+	if (openBtn && modal) {
+		// Open modal
+		openBtn.addEventListener('click', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			modal.classList.remove('hidden');
+			setTimeout(() => {
+				backdrop.style.opacity = '1';
+			}, 10);
+			// Close dropdown
+			if (profileDropdown) {
+				profileDropdown.classList.remove('visible');
+			}
+		});
+
+		// Close modal handlers
+		const closeModal = () => {
+			backdrop.style.opacity = '0';
+			setTimeout(() => {
+				modal.classList.add('hidden');
+			}, 300);
+		};
+
+		closeBtn?.addEventListener('click', closeModal);
+		closeBottomBtn?.addEventListener('click', closeModal);
+		backdrop?.addEventListener('click', closeModal);
+
+		// Prevent modal close when clicking inside
+		modal.querySelector('div:nth-child(2)')?.addEventListener('click', (e) => {
+			e.stopPropagation();
+		});
+
+		// Close on Escape key
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+				closeModal();
+			}
+		});
+	}
+
+	// Initialize on DOMContentLoaded or if already loaded
+	if (document.readyState === 'complete' || document.readyState === 'interactive') {
+		initThemeButtons();
+	}
+	document.addEventListener('DOMContentLoaded', initThemeButtons);
+})();
 </script>
 
 </body>
