@@ -51,15 +51,27 @@ class _NotificationsViewState extends State<NotificationsView> {
 
         setState(() {
           _notifications = notificationsData.map((notif) {
+            DateTime timestamp;
+            try {
+              timestamp = DateTime.parse(
+                notif['createdAt'] ??
+                    notif['created_at'] ??
+                    DateTime.now().toIso8601String(),
+              );
+            } catch (e) {
+              timestamp = DateTime.now();
+            }
             return {
               'id': notif['id']?.toString() ?? 'unknown',
               'title': notif['title'] ?? 'Notification',
-              'message': notif['description'] ?? '',
-              'type': notif['type'] ?? 'info',
-              'timestamp': DateTime.parse(notif['createdAt']),
-              'isRead': notif['isRead'] ?? false,
+              'message': notif['description'] ?? notif['message'] ?? '',
+              'type': notif['type'] ?? notif['notification_type'] ?? 'info',
+              'timestamp': timestamp,
+              'isRead': notif['isRead'] ?? notif['is_read'] ?? false,
               'icon': notif['icon'] ?? 'notifications',
-              'iconColor': notif['iconColor'] ?? '#3498DB',
+              'iconColor':
+                  notif['iconColor'] ?? notif['icon_color'] ?? '#3498DB',
+              'timeAgo': notif['time'] ?? '',
             };
           }).toList();
           _isLoading = false;
@@ -276,48 +288,65 @@ class _NotificationsViewState extends State<NotificationsView> {
                         size: 50.0,
                       ),
                     )
-                  : _notifications.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Ionicons.notifications_off_outline,
-                            size: 64,
-                            color: subtleTextColor,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'No notifications yet',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              color: subtleTextColor,
+                  : RefreshIndicator(
+                      onRefresh: _refreshNotifications,
+                      color: primaryColor,
+                      child: _notifications.isEmpty
+                          ? ListView(
+                              physics: AlwaysScrollableScrollPhysics(),
+                              children: [
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.5,
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Ionicons.notifications_off_outline,
+                                          size: 64,
+                                          color: subtleTextColor,
+                                        ),
+                                        SizedBox(height: 16),
+                                        Text(
+                                          'No notifications yet',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            color: subtleTextColor,
+                                          ),
+                                        ),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          'Pull down to refresh',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            color: subtleTextColor.withOpacity(
+                                              0.7,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : ListView.builder(
+                              physics: AlwaysScrollableScrollPhysics(),
+                              padding: EdgeInsets.all(16),
+                              itemCount: _notifications.length,
+                              itemBuilder: (context, index) {
+                                final notification = _notifications[index];
+                                return _buildNotificationCard(
+                                  notification,
+                                  primaryColor,
+                                  textColor,
+                                  subtleTextColor,
+                                  isDark,
+                                );
+                              },
                             ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'We\'ll notify you when something arrives',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: subtleTextColor.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.all(16),
-                      itemCount: _notifications.length,
-                      itemBuilder: (context, index) {
-                        final notification = _notifications[index];
-                        return _buildNotificationCard(
-                          notification,
-                          primaryColor,
-                          textColor,
-                          subtleTextColor,
-                          isDark,
-                        );
-                      },
                     ),
             ),
           ],

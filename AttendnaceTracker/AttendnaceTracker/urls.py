@@ -178,6 +178,7 @@ urlpatterns = [
     path('api/student-stats/<int:student_id>/', student_views.get_student_stats, name='get_student_stats'),
     path('api/student-logs/<int:student_id>/', student_views.get_student_attendance_logs, name='get_student_attendance_logs'),
     path('api/student-activity/<int:student_id>/', student_views.get_student_recent_activity, name='get_student_recent_activity'),
+    path('api/student-profile/<int:student_id>/', student_views.get_student_profile, name='get_student_profile'),
     
     # Notification URLs
     path('api/notifications/<int:user_id>/', notification_views.get_user_notifications, name='get_user_notifications'),

@@ -204,40 +204,65 @@ class _AttendanceLogsViewState extends State<AttendanceLogsView> {
                         size: 50.0,
                       ),
                     )
-                  : _filteredLogs.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Ionicons.calendar_outline,
-                            size: 64,
-                            color: subtleTextColor,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'No attendance logs found',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              color: subtleTextColor,
+                  : RefreshIndicator(
+                      onRefresh: _fetchAttendanceLogs,
+                      color: primaryColor,
+                      child: _filteredLogs.isEmpty
+                          ? ListView(
+                              physics: AlwaysScrollableScrollPhysics(),
+                              children: [
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.5,
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Ionicons.calendar_outline,
+                                          size: 64,
+                                          color: subtleTextColor,
+                                        ),
+                                        SizedBox(height: 16),
+                                        Text(
+                                          'No attendance logs found',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            color: subtleTextColor,
+                                          ),
+                                        ),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          'Pull down to refresh',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: subtleTextColor.withOpacity(
+                                              0.7,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : ListView.builder(
+                              physics: AlwaysScrollableScrollPhysics(),
+                              padding: EdgeInsets.all(16),
+                              itemCount: _filteredLogs.length,
+                              itemBuilder: (context, index) {
+                                final log = _filteredLogs[index];
+                                return _buildAttendanceCard(
+                                  log,
+                                  primaryColor,
+                                  textColor,
+                                  subtleTextColor,
+                                  isDark,
+                                );
+                              },
                             ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.all(16),
-                      itemCount: _filteredLogs.length,
-                      itemBuilder: (context, index) {
-                        final log = _filteredLogs[index];
-                        return _buildAttendanceCard(
-                          log,
-                          primaryColor,
-                          textColor,
-                          subtleTextColor,
-                          isDark,
-                        );
-                      },
                     ),
             ),
           ],

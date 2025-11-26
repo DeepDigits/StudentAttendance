@@ -44,13 +44,61 @@ class _UserDashboardViewState extends State<UserDashboardView> {
   Future<List<Map<String, dynamic>>>?
   _userPostedJobsFuture; // Changed from recommended jobs
 
+  // Profile data
+  String? _profilePicUrl;
+  String? _displayName;
+  bool _isProfileLoading = true;
+
   @override
   void initState() {
     super.initState();
     // Assign futures in initState
+    _fetchUserProfile();
     _userStatsFuture = _fetchUserStats();
     _userPostedJobsFuture =
         _fetchUserPostedJobs(); // Changed from recommended jobs
+  }
+
+  Future<void> _fetchUserProfile() async {
+    if (widget.userId == null) {
+      setState(() {
+        _isProfileLoading = false;
+      });
+      return;
+    }
+
+    try {
+      print('Fetching profile for user: ${widget.userId}');
+      final response = await http
+          .get(
+            Uri.parse(
+              '${ApiConfig.baseUrl}/api/student-profile/${widget.userId}/',
+            ),
+            headers: {'Accept': 'application/json'},
+          )
+          .timeout(Duration(seconds: 10));
+
+      print('Profile API Response Status: ${response.statusCode}');
+      print('Profile API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> profileData = json.decode(response.body);
+        setState(() {
+          _profilePicUrl = profileData['profilePicUrl'];
+          _displayName = profileData['fullName'] ?? widget.userName;
+          _isProfileLoading = false;
+        });
+      } else {
+        setState(() {
+          _isProfileLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching profile: $e');
+      setState(() {
+        _isProfileLoading = false;
+      });
+    }
   }
 
   Future<List<Map<String, dynamic>>> _fetchUserStats() async {
@@ -72,34 +120,44 @@ class _UserDashboardViewState extends State<UserDashboardView> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> statsData = json.decode(response.body);
 
+        // Extract values from API response
+        final int presentDays = statsData['present_days'] ?? 0;
+        final int absentDays = statsData['absent_days'] ?? 0;
+        final int totalClasses = statsData['total_classes'] ?? 0;
+        final String attendanceRate =
+            statsData['attendance_rate']?.toString() ?? '0%';
+        final int weeklyPresent = statsData['weekly_present'] ?? 0;
+        final int weeklyAbsent = statsData['weekly_absent'] ?? 0;
+        final int weeklyClasses = statsData['weekly_classes'] ?? 0;
+
         return [
           {
             'title': 'Present Days',
-            'count': statsData['this_month']?.toString() ?? '0',
+            'count': presentDays.toString(),
             'icon': Ionicons.checkmark_circle_outline,
             'color': '#2ECC71',
-            'growth': '+${statsData['this_week']?.toString() ?? '0'}',
+            'weeklyValue': weeklyPresent.toString(),
           },
           {
             'title': 'Absent Days',
-            'count': statsData['absent_days']?.toString() ?? '0',
+            'count': absentDays.toString(),
             'icon': Ionicons.close_circle_outline,
             'color': '#E74C3C',
-            'growth': '--',
+            'weeklyValue': weeklyAbsent.toString(),
           },
           {
             'title': 'Total Classes',
-            'count': statsData['total_classes']?.toString() ?? '0',
+            'count': totalClasses.toString(),
             'icon': Ionicons.calendar_outline,
             'color': '#4A6FE6',
-            'growth': '+${statsData['weekly_present']?.toString() ?? '0'}',
+            'weeklyValue': weeklyClasses.toString(),
           },
           {
             'title': 'Attendance Rate',
-            'count': statsData['attendance_rate']?.toString() ?? '0%',
+            'count': attendanceRate,
             'icon': Ionicons.trending_up_outline,
             'color': '#9B59B6',
-            'growth': 'This Month',
+            'weeklyValue': '75%',
           },
         ];
       } else {
@@ -167,11 +225,14 @@ class _UserDashboardViewState extends State<UserDashboardView> {
   Future<void> _handleRefresh() async {
     if (mounted) {
       setState(() {
+        _isProfileLoading = true;
         // Re-assign futures on refresh
         _userStatsFuture = _fetchUserStats();
         _userPostedJobsFuture =
             _fetchUserPostedJobs(); // Changed from recommended jobs
       });
+      // Fetch profile and stats
+      await _fetchUserProfile();
       // Await nullable futures safely
       await Future.wait([
         if (_userStatsFuture != null) _userStatsFuture!,
@@ -192,10 +253,12 @@ class _UserDashboardViewState extends State<UserDashboardView> {
     final Color subtleTextColor =
         theme.textTheme.bodySmall?.color ??
         (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
-    final String? profilePicUrl = null;
 
-    // Use the actual user name from widget props, fallback to 'User' if null
-    final String displayName = widget.userName ?? 'User';
+    // Use the profile picture from API, fallback to null (will show default)
+    final String? profilePicUrl = _profilePicUrl;
+
+    // Use the actual user name from API or widget props, fallback to 'User' if null
+    final String displayName = _displayName ?? widget.userName ?? 'User';
 
     return RefreshIndicator(
       onRefresh: _handleRefresh,
@@ -466,6 +529,7 @@ class _UserDashboardViewState extends State<UserDashboardView> {
                       count: stat['count'] as String,
                       icon: stat['icon'] as IconData,
                       color: _colorFromHex(stat['color'] as String),
+                      weeklyValue: stat['weeklyValue'] as String,
                     ),
                   );
                 },
@@ -484,6 +548,7 @@ class _UserDashboardViewState extends State<UserDashboardView> {
     required String count,
     required IconData icon,
     required Color color, // Primary accent color
+    String weeklyValue = '0',
   }) {
     final theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
@@ -500,6 +565,11 @@ class _UserDashboardViewState extends State<UserDashboardView> {
     final double cardWidth = 240.0;
     final double cardHeight = 200.0;
 
+    // Clean up weeklyValue (remove '+' prefix if present)
+    String cleanWeeklyValue = weeklyValue
+        .replaceAll('+', '')
+        .replaceAll('-', '');
+
     // Define relevant stats based on the card title
     String leftLabel = '';
     String leftValue = '';
@@ -509,21 +579,21 @@ class _UserDashboardViewState extends State<UserDashboardView> {
     switch (title) {
       case 'Present Days':
         leftLabel = 'This Week';
-        leftValue = '5';
+        leftValue = cleanWeeklyValue;
         rightLabel = 'This Month';
         rightValue = count;
         break;
       case 'Absent Days':
         leftLabel = 'This Week';
-        leftValue = '1';
+        leftValue = cleanWeeklyValue == '--' ? '0' : cleanWeeklyValue;
         rightLabel = 'This Month';
         rightValue = count;
         break;
       case 'Total Classes':
-        leftLabel = 'Attended';
-        leftValue = count;
-        rightLabel = 'Average';
-        rightValue = '48';
+        leftLabel = 'This Week';
+        leftValue = cleanWeeklyValue;
+        rightLabel = 'This Month';
+        rightValue = count;
         break;
       case 'Attendance Rate':
         leftLabel = 'Target';
@@ -1072,31 +1142,31 @@ class _UserDashboardViewState extends State<UserDashboardView> {
     return [
       {
         'title': 'Present Days',
-        'count': '42',
+        'count': '0',
         'icon': Ionicons.checkmark_circle_outline,
         'color': '#2ECC71',
-        'growth': '+5',
+        'weeklyValue': '0',
       },
       {
         'title': 'Absent Days',
-        'count': '3',
+        'count': '0',
         'icon': Ionicons.close_circle_outline,
         'color': '#E74C3C',
-        'growth': '-2',
+        'weeklyValue': '0',
       },
       {
         'title': 'Total Classes',
-        'count': '48',
+        'count': '0',
         'icon': Ionicons.calendar_outline,
         'color': '#4A6FE6',
-        'growth': '+8',
+        'weeklyValue': '0',
       },
       {
         'title': 'Attendance Rate',
-        'count': '87.5%',
+        'count': '0%',
         'icon': Ionicons.trending_up_outline,
         'color': '#9B59B6',
-        'growth': '+3.5%',
+        'weeklyValue': '75%',
       },
     ];
   }
@@ -1194,7 +1264,11 @@ class _UserDashboardState extends State<UserDashboard> {
       ),
       AttendanceLogsView(userId: widget.userId),
       NotificationsView(userId: widget.userId),
-      const UserSettingsScreen(),
+      UserSettingsScreen(
+        userName: widget.userName,
+        userEmail: widget.userEmail,
+        userId: widget.userId,
+      ),
     ];
 
     final SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(

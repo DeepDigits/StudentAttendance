@@ -157,12 +157,27 @@ def get_student_stats(request, student_id):
             action='Check-In'
         ).values('date').distinct().count()
         
+        # Calculate weekly working days and absent days
+        days_in_week = (today - week_start).days + 1
+        weekly_working_days = min(days_in_week, 5)  # Max 5 working days in a week
+        weekly_absent = max(0, weekly_working_days - weekly_present)
+        
+        # Weekly classes count
+        weekly_classes = Attendance.objects.filter(
+            student=profile,
+            date__gte=week_start,
+            date__lte=today,
+            action='Check-In'
+        ).count()
+        
         data = {
             'present_days': present_days,
             'absent_days': absent_days,
             'total_classes': total_classes,
             'attendance_rate': f'{attendance_rate}%',
             'weekly_present': weekly_present,
+            'weekly_absent': weekly_absent,
+            'weekly_classes': weekly_classes,
             'this_week': weekly_present,
             'this_month': present_days,
         }
@@ -295,5 +310,77 @@ def get_student_recent_activity(request, student_id):
         
     except UserProfile.DoesNotExist:
         return Response({'error': 'Student profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_student_profile(request, student_id):
+    """
+    Get student profile information including avatar/profile picture.
+    """
+    from .models import UserProfile
+    from django.contrib.auth.models import User
+    
+    try:
+        # Get the user
+        user = User.objects.get(id=student_id)
+        
+        # Try to get the UserProfile (face recognition profile)
+        profile = None
+        avatar_url = None
+        department = ''
+        student_id_number = ''
+        phone = ''
+        section = ''
+        year_of_study = ''
+        approval_status = ''
+        
+        if hasattr(user, 'profile'):
+            profile = user.profile
+            if profile.avatar:
+                avatar_url = request.build_absolute_uri(profile.avatar.url)
+            department = profile.department or ''
+            student_id_number = profile.student_id or ''
+            phone = profile.phone or ''
+        
+        # Also check StudentProfile if exists (has more detailed info)
+        if hasattr(user, 'student_profile'):
+            student_profile = user.student_profile
+            if not avatar_url and student_profile.profile_pic:
+                avatar_url = request.build_absolute_uri(student_profile.profile_pic.url)
+            if not department:
+                department = student_profile.department or ''
+            if not student_id_number:
+                student_id_number = student_profile.roll_number or ''
+            if not phone:
+                phone = student_profile.phone or ''
+            section = student_profile.section or ''
+            year_of_study = student_profile.year_of_study or ''
+            approval_status = student_profile.approval_status or ''
+        
+        data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'fullName': f"{user.first_name} {user.last_name}".strip() or user.username,
+            'firstName': user.first_name or '',
+            'lastName': user.last_name or '',
+            'profilePicUrl': avatar_url,
+            'department': department,
+            'studentId': student_id_number,
+            'phone': phone,
+            'section': section,
+            'yearOfStudy': year_of_study,
+            'approvalStatus': approval_status,
+            'dateJoined': user.date_joined.isoformat() if user.date_joined else None,
+            'lastLogin': user.last_login.isoformat() if user.last_login else None,
+            'isActive': user.is_active,
+        }
+        
+        return Response(data, status=status.HTTP_200_OK)
+        
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
