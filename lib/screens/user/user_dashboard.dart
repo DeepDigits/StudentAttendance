@@ -44,18 +44,130 @@ class _UserDashboardViewState extends State<UserDashboardView> {
   Future<List<Map<String, dynamic>>>?
   _userPostedJobsFuture; // Changed from recommended jobs
 
+  // Profile data
+  String? _profilePicUrl;
+  String? _displayName;
+  bool _isProfileLoading = true;
+
   @override
   void initState() {
     super.initState();
     // Assign futures in initState
+    _fetchUserProfile();
     _userStatsFuture = _fetchUserStats();
     _userPostedJobsFuture =
         _fetchUserPostedJobs(); // Changed from recommended jobs
   }
 
+  Future<void> _fetchUserProfile() async {
+    if (widget.userId == null) {
+      setState(() {
+        _isProfileLoading = false;
+      });
+      return;
+    }
+
+    try {
+      print('Fetching profile for user: ${widget.userId}');
+      final response = await http
+          .get(
+            Uri.parse(
+              '${ApiConfig.baseUrl}/api/student-profile/${widget.userId}/',
+            ),
+            headers: {'Accept': 'application/json'},
+          )
+          .timeout(Duration(seconds: 10));
+
+      print('Profile API Response Status: ${response.statusCode}');
+      print('Profile API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> profileData = json.decode(response.body);
+        setState(() {
+          _profilePicUrl = profileData['profilePicUrl'];
+          _displayName = profileData['fullName'] ?? widget.userName;
+          _isProfileLoading = false;
+        });
+      } else {
+        setState(() {
+          _isProfileLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching profile: $e');
+      setState(() {
+        _isProfileLoading = false;
+      });
+    }
+  }
+
   Future<List<Map<String, dynamic>>> _fetchUserStats() async {
-    // Always use local default stats for attendance tracking
-    return _getDefaultStats();
+    if (widget.userId == null) {
+      print('User ID is null, returning default stats');
+      return _getDefaultStats();
+    }
+
+    try {
+      print('Fetching stats for student: ${widget.userId}');
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/api/student-stats/${widget.userId}/'),
+        headers: {'Accept': 'application/json'},
+      );
+
+      print('Stats API Response Status: ${response.statusCode}');
+      print('Stats API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> statsData = json.decode(response.body);
+
+        // Extract values from API response
+        final int presentDays = statsData['present_days'] ?? 0;
+        final int absentDays = statsData['absent_days'] ?? 0;
+        final int totalClasses = statsData['total_classes'] ?? 0;
+        final String attendanceRate =
+            statsData['attendance_rate']?.toString() ?? '0%';
+        final int weeklyPresent = statsData['weekly_present'] ?? 0;
+        final int weeklyAbsent = statsData['weekly_absent'] ?? 0;
+        final int weeklyClasses = statsData['weekly_classes'] ?? 0;
+
+        return [
+          {
+            'title': 'Present Days',
+            'count': presentDays.toString(),
+            'icon': Ionicons.checkmark_circle_outline,
+            'color': '#2ECC71',
+            'weeklyValue': weeklyPresent.toString(),
+          },
+          {
+            'title': 'Absent Days',
+            'count': absentDays.toString(),
+            'icon': Ionicons.close_circle_outline,
+            'color': '#E74C3C',
+            'weeklyValue': weeklyAbsent.toString(),
+          },
+          {
+            'title': 'Total Classes',
+            'count': totalClasses.toString(),
+            'icon': Ionicons.calendar_outline,
+            'color': '#4A6FE6',
+            'weeklyValue': weeklyClasses.toString(),
+          },
+          {
+            'title': 'Attendance Rate',
+            'count': attendanceRate,
+            'icon': Ionicons.trending_up_outline,
+            'color': '#9B59B6',
+            'weeklyValue': '75%',
+          },
+        ];
+      } else {
+        print('Failed to fetch stats: ${response.statusCode}');
+        return _getDefaultStats();
+      }
+    } catch (e) {
+      print('Error fetching user stats: $e');
+      return _getDefaultStats();
+    }
   }
 
   Future<List<Map<String, dynamic>>> _fetchUserPostedJobs() async {
@@ -113,11 +225,14 @@ class _UserDashboardViewState extends State<UserDashboardView> {
   Future<void> _handleRefresh() async {
     if (mounted) {
       setState(() {
+        _isProfileLoading = true;
         // Re-assign futures on refresh
         _userStatsFuture = _fetchUserStats();
         _userPostedJobsFuture =
             _fetchUserPostedJobs(); // Changed from recommended jobs
       });
+      // Fetch profile and stats
+      await _fetchUserProfile();
       // Await nullable futures safely
       await Future.wait([
         if (_userStatsFuture != null) _userStatsFuture!,
@@ -138,10 +253,12 @@ class _UserDashboardViewState extends State<UserDashboardView> {
     final Color subtleTextColor =
         theme.textTheme.bodySmall?.color ??
         (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
-    final String? profilePicUrl = null;
 
-    // Use the actual user name from widget props, fallback to 'User' if null
-    final String displayName = widget.userName ?? 'User';
+    // Use the profile picture from API, fallback to null (will show default)
+    final String? profilePicUrl = _profilePicUrl;
+
+    // Use the actual user name from API or widget props, fallback to 'User' if null
+    final String displayName = _displayName ?? widget.userName ?? 'User';
 
     return RefreshIndicator(
       onRefresh: _handleRefresh,
@@ -198,144 +315,162 @@ class _UserDashboardViewState extends State<UserDashboardView> {
       'EEEE, MMM d • h:mm a',
     ).format(now);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Profile and Welcome Text Row
-        Row(
-          children: [
-            // Profile Avatar with gradient border
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    primaryColor.withOpacity(0.7),
-                    primaryColor.withOpacity(0.3),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF2A2A2A), const Color(0xFF1E1E1E)]
+              : [Colors.white, Colors.grey.shade50],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Profile Avatar with gradient border
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [primaryColor, primaryColor.withOpacity(0.5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: CircleAvatar(
+              radius: 32,
+              backgroundColor: isDark ? Colors.grey[800] : Colors.white,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(32),
+                child: Image.network(
+                  profilePicUrl ?? defaultProfilePicUrl,
+                  width: 64,
+                  height: 64,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    final initials = name.isNotEmpty
+                        ? name[0].toUpperCase()
+                        : '?';
+                    return Center(
+                      child: Text(
+                        initials,
+                        style: GoogleFonts.outfit(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w600,
+                          color: primaryColor,
+                        ),
+                      ),
+                    );
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.0,
+                        color: primaryColor,
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+
+          // Welcome Text Column
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome Back,',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: subtleTextColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  name,
+                  style: GoogleFonts.outfit(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                    letterSpacing: -0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(
+                      Ionicons.calendar_outline,
+                      size: 14,
+                      color: subtleTextColor.withOpacity(0.7),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      formattedDateTime,
+                      style: GoogleFonts.inter(
+                        color: subtleTextColor.withOpacity(0.7),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.15),
-                    blurRadius: 8,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(2), // Border width
-              child: CircleAvatar(
-                radius: 28,
-                backgroundColor: isDark ? Colors.grey[800] : Colors.white,
-                // Use ClipRRect to ensure the image is clipped to the circle
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
-                  child: Image.network(
-                    profilePicUrl ??
-                        defaultProfilePicUrl, // Use default if null
-                    width: 56,
-                    height: 56,
-                    fit: BoxFit.cover,
-                    // Add error builder for network image
-                    errorBuilder: (context, error, stackTrace) {
-                      // Fallback to initials if the default image also fails
-                      final initials = name.isNotEmpty
-                          ? name[0].toUpperCase()
-                          : '?';
-                      return Center(
-                        child: Text(
-                          initials,
-                          style: GoogleFonts.outfit(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                            color: primaryColor,
-                          ),
-                        ),
-                      );
-                    },
-                    // Optional: Add loading builder
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.0,
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+              ],
             ),
-            const SizedBox(width: 16),
+          ),
 
-            // Welcome Text Column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome Back,',
-                    style: GoogleFonts.outfit(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: subtleTextColor,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    name,
-                    style: GoogleFonts.outfit(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
-                      letterSpacing: -0.5,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6), // Add spacing before date/time
-                  // Display formatted date and time
-                  Text(
-                    formattedDateTime,
-                    style: GoogleFonts.outfit(
-                      color: subtleTextColor.withOpacity(0.8), // Slightly faded
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
+          // Notification Icon with Badge
+          Container(
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.grey[800]!.withOpacity(0.5)
+                  : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
             ),
-
-            // Notification Icon with Badge
-            Stack(
+            child: Stack(
               clipBehavior: Clip.none,
               children: [
                 IconButton(
                   icon: Icon(
                     Ionicons.notifications_outline,
                     color: subtleTextColor,
-                    size: 24,
+                    size: 22,
                   ),
                   onPressed: () {},
                 ),
                 Positioned(
-                  right: 8,
-                  top: 8,
+                  right: 10,
+                  top: 10,
                   child: Container(
-                    width: 12,
-                    height: 12,
+                    width: 10,
+                    height: 10,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.error,
+                      color: const Color(0xFFFF5252),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: theme.scaffoldBackgroundColor,
+                        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                         width: 2,
                       ),
                     ),
@@ -343,9 +478,9 @@ class _UserDashboardViewState extends State<UserDashboardView> {
                 ),
               ],
             ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -412,6 +547,7 @@ class _UserDashboardViewState extends State<UserDashboardView> {
                       count: stat['count'] as String,
                       icon: stat['icon'] as IconData,
                       color: _colorFromHex(stat['color'] as String),
+                      weeklyValue: stat['weeklyValue'] as String,
                     ),
                   );
                 },
@@ -430,6 +566,7 @@ class _UserDashboardViewState extends State<UserDashboardView> {
     required String count,
     required IconData icon,
     required Color color, // Primary accent color
+    String weeklyValue = '0',
   }) {
     final theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
@@ -446,6 +583,11 @@ class _UserDashboardViewState extends State<UserDashboardView> {
     final double cardWidth = 240.0;
     final double cardHeight = 200.0;
 
+    // Clean up weeklyValue (remove '+' prefix if present)
+    String cleanWeeklyValue = weeklyValue
+        .replaceAll('+', '')
+        .replaceAll('-', '');
+
     // Define relevant stats based on the card title
     String leftLabel = '';
     String leftValue = '';
@@ -455,21 +597,21 @@ class _UserDashboardViewState extends State<UserDashboardView> {
     switch (title) {
       case 'Present Days':
         leftLabel = 'This Week';
-        leftValue = '5';
+        leftValue = cleanWeeklyValue;
         rightLabel = 'This Month';
         rightValue = count;
         break;
       case 'Absent Days':
         leftLabel = 'This Week';
-        leftValue = '1';
+        leftValue = cleanWeeklyValue == '--' ? '0' : cleanWeeklyValue;
         rightLabel = 'This Month';
         rightValue = count;
         break;
       case 'Total Classes':
-        leftLabel = 'Attended';
-        leftValue = count;
-        rightLabel = 'Average';
-        rightValue = '48';
+        leftLabel = 'This Week';
+        leftValue = cleanWeeklyValue;
+        rightLabel = 'This Month';
+        rightValue = count;
         break;
       case 'Attendance Rate':
         leftLabel = 'Target';
@@ -694,17 +836,145 @@ class _UserDashboardViewState extends State<UserDashboardView> {
           ),
         ),
         const SizedBox(height: 16),
-        _buildRecentActivityList(theme, isDark),
+        _buildRecentActivityListFromAPI(theme, isDark),
       ],
     );
   }
 
-  Widget _buildRecentActivityList(ThemeData theme, bool isDark) {
-    // Dummy recent activity data
-    final List<Map<String, dynamic>> activities = [
+  Widget _buildRecentActivityListFromAPI(ThemeData theme, bool isDark) {
+    if (widget.userId == null) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            'No recent activity',
+            style: GoogleFonts.outfit(color: theme.textTheme.bodySmall?.color),
+          ),
+        ),
+      );
+    }
+
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _fetchRecentActivity(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 30.0),
+              child: SpinKitFadingCircle(color: Colors.grey, size: 30.0),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                'Error loading activity',
+                style: GoogleFonts.outfit(color: Colors.red),
+              ),
+            ),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                children: [
+                  Icon(
+                    Ionicons.calendar_outline,
+                    size: 48,
+                    color: theme.textTheme.bodySmall?.color,
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'No recent activity',
+                    style: GoogleFonts.outfit(
+                      color: theme.textTheme.bodySmall?.color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final activities = snapshot.data!;
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: activities.length,
+          itemBuilder: (context, index) {
+            final activity = activities[index];
+            return _buildActivityCard(activity, theme, isDark);
+          },
+        );
+      },
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchRecentActivity() async {
+    if (widget.userId == null) return _getDefaultRecentActivity();
+
+    try {
+      print('Fetching recent activity for student: ${widget.userId}');
+      final response = await http
+          .get(
+            Uri.parse(
+              '${ApiConfig.baseUrl}/api/student-activity/${widget.userId}/',
+            ),
+            headers: {'Accept': 'application/json'},
+          )
+          .timeout(Duration(seconds: 5));
+
+      print('Activity API Response Status: ${response.statusCode}');
+      print('Activity API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> activityData = json.decode(response.body);
+
+        return activityData.map((activity) {
+          // Map icon names from backend to Ionicons
+          IconData iconData;
+          switch (activity['icon']) {
+            case 'checkmark_circle':
+              iconData = Ionicons.checkmark_circle;
+              break;
+            case 'log_out':
+              iconData = Ionicons.log_out;
+              break;
+            case 'time':
+              iconData = Ionicons.time;
+              break;
+            default:
+              iconData = Ionicons.information_circle;
+          }
+
+          return {
+            'title': activity['title'] ?? '',
+            'description': activity['description'] ?? '',
+            'time': activity['time'] ?? '',
+            'icon': iconData,
+            'iconColor': activity['iconColor'] ?? '#4A6FE6',
+            'type': activity['type'] ?? 'info',
+          };
+        }).toList();
+      } else {
+        print(
+          'Failed to fetch recent activity: ${response.statusCode}, using default',
+        );
+        return _getDefaultRecentActivity();
+      }
+    } catch (e) {
+      print('Error fetching recent activity: $e');
+      return _getDefaultRecentActivity();
+    }
+  }
+
+  List<Map<String, dynamic>> _getDefaultRecentActivity() {
+    return [
       {
         'title': 'Attendance Marked',
-        'description': 'Computer Science - Dr. Sarah Johnson',
+        'description': 'Computer Science',
         'time': '2 hours ago',
         'icon': Ionicons.checkmark_circle,
         'iconColor': '#2ECC71',
@@ -734,25 +1004,7 @@ class _UserDashboardViewState extends State<UserDashboardView> {
         'iconColor': '#F39C12',
         'type': 'report',
       },
-      {
-        'title': 'Perfect Attendance Streak',
-        'description': '7 days in a row',
-        'time': '3 days ago',
-        'icon': Ionicons.trophy,
-        'iconColor': '#E67E22',
-        'type': 'achievement',
-      },
     ];
-
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: activities.length,
-      itemBuilder: (context, index) {
-        final activity = activities[index];
-        return _buildActivityCard(activity, theme, isDark);
-      },
-    );
   }
 
   Widget _buildActivityCard(
@@ -908,31 +1160,31 @@ class _UserDashboardViewState extends State<UserDashboardView> {
     return [
       {
         'title': 'Present Days',
-        'count': '42',
+        'count': '0',
         'icon': Ionicons.checkmark_circle_outline,
         'color': '#2ECC71',
-        'growth': '+5',
+        'weeklyValue': '0',
       },
       {
         'title': 'Absent Days',
-        'count': '3',
+        'count': '0',
         'icon': Ionicons.close_circle_outline,
         'color': '#E74C3C',
-        'growth': '-2',
+        'weeklyValue': '0',
       },
       {
         'title': 'Total Classes',
-        'count': '48',
+        'count': '0',
         'icon': Ionicons.calendar_outline,
         'color': '#4A6FE6',
-        'growth': '+8',
+        'weeklyValue': '0',
       },
       {
         'title': 'Attendance Rate',
-        'count': '87.5%',
+        'count': '0%',
         'icon': Ionicons.trending_up_outline,
         'color': '#9B59B6',
-        'growth': '+3.5%',
+        'weeklyValue': '75%',
       },
     ];
   }
@@ -1030,7 +1282,11 @@ class _UserDashboardState extends State<UserDashboard> {
       ),
       AttendanceLogsView(userId: widget.userId),
       NotificationsView(userId: widget.userId),
-      const UserSettingsScreen(),
+      UserSettingsScreen(
+        userName: widget.userName,
+        userEmail: widget.userEmail,
+        userId: widget.userId,
+      ),
     ];
 
     final SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(
@@ -1044,58 +1300,64 @@ class _UserDashboardState extends State<UserDashboard> {
       value: systemUiOverlayStyle,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(
-          // Use theme background color instead of hardcoded white
-          backgroundColor: isDark
-              ? theme.scaffoldBackgroundColor
-              : Colors.white,
-          // Use theme text color for contrast
-          foregroundColor: isDark ? Colors.white : Colors.black87,
-          elevation: isDark
-              ? 0
-              : 0.5, // Less elevation in dark mode for a flat look
-          shadowColor: Colors.black.withOpacity(isDark ? 0.0 : 0.05),
-          title: Text(
-            _getAppBarTitle(_selectedIndex),
-            style: GoogleFonts.outfit(
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-              color: isDark
-                  ? Colors.white
-                  : Colors.black87, // Theme-aware text color
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(70),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1A1A1A) : primaryMaterialColor,
+              boxShadow: [
+                BoxShadow(
+                  color: primaryMaterialColor.withOpacity(isDark ? 0.0 : 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          ),
-          centerTitle: true,
-          toolbarHeight: 65,
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Ionicons.menu_outline),
-              tooltip: 'Menu',
-              onPressed: () => Scaffold.of(context).openDrawer(),
-              color: isDark
-                  ? Colors.white
-                  : Colors.black87, // Theme-aware icon color
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Ionicons.log_out_outline),
-              tooltip: 'Logout',
-              onPressed: () {
-                _logout(context);
-              },
-              color: isDark
-                  ? Colors.white
-                  : Colors.black87, // Theme-aware icon color
-            ),
-            const SizedBox(width: 12),
-          ],
-          // Theme-aware bottom border
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(1.0),
-            child: Container(
-              color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-              height: isDark ? 0.5 : 1.0, // Thinner line in dark mode
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  children: [
+                    // Menu Button
+                    Builder(
+                      builder: (context) => IconButton(
+                        icon: Icon(
+                          Ionicons.menu_outline,
+                          color: isDark ? Colors.white : Colors.white,
+                          size: 26,
+                        ),
+                        tooltip: 'Menu',
+                        onPressed: () => Scaffold.of(context).openDrawer(),
+                      ),
+                    ),
+
+                    // Centered Title
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          _getAppBarTitle(_selectedIndex),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 20,
+                            color: isDark ? Colors.white : Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Logout Button
+                    IconButton(
+                      icon: Icon(
+                        Ionicons.log_out_outline,
+                        color: isDark ? Colors.white : Colors.white,
+                        size: 24,
+                      ),
+                      tooltip: 'Logout',
+                      onPressed: () => _logout(context),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -1202,18 +1464,18 @@ class _UserDashboardState extends State<UserDashboard> {
             onTap: () => _onSelectItem(2),
           ),
           Divider(color: theme.dividerColor),
-          _buildDrawerItem(
-            icon: Ionicons.finger_print_outline,
-            text: 'Face Recognition',
-            selected: false,
-            selectedColor: headerColor,
-            defaultIconColor: drawerIconColor,
-            defaultTextColor: drawerTextColor,
-            onTap: () {
-              Navigator.pop(context);
-              // TODO: Navigate to face recognition enrollment
-            },
-          ),
+          // _buildDrawerItem(
+          //   icon: Ionicons.finger_print_outline,
+          //   text: 'Face Recognition',
+          //   selected: false,
+          //   selectedColor: headerColor,
+          //   defaultIconColor: drawerIconColor,
+          //   defaultTextColor: drawerTextColor,
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     // TODO: Navigate to face recognition enrollment
+          //   },
+          // ),
           _buildDrawerItem(
             icon: Ionicons.settings_outline,
             text: 'Settings',
@@ -1292,51 +1554,56 @@ class _UserDashboardState extends State<UserDashboard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Color.fromARGB(255, 25, 25, 30) : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-            width: 0.5,
-          ),
-        ),
-      ),
-      height: 70, // Increased height to accommodate labels
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavBarIconButton(
-            icon: Ionicons.home_outline,
-            activeIcon: Ionicons.home,
-            label: 'Home',
-            isSelected: _selectedIndex == 0,
-            activeColor: activeColor,
-            onTap: () => setState(() => _selectedIndex = 0),
-          ),
-          _buildNavBarIconButton(
-            icon: Ionicons.list_outline,
-            activeIcon: Ionicons.list,
-            label: 'Logs',
-            isSelected: _selectedIndex == 1,
-            activeColor: activeColor,
-            onTap: () => setState(() => _selectedIndex = 1),
-          ),
-          _buildNavBarIconButton(
-            icon: Ionicons.notifications_outline,
-            activeIcon: Ionicons.notifications,
-            label: 'Notifications',
-            isSelected: _selectedIndex == 2,
-            activeColor: activeColor,
-            onTap: () => setState(() => _selectedIndex = 2),
-          ),
-          _buildNavBarIconButton(
-            icon: Ionicons.settings_outline,
-            activeIcon: Ionicons.settings,
-            label: 'Settings',
-            isSelected: _selectedIndex == 3,
-            activeColor: activeColor,
-            onTap: () => setState(() => _selectedIndex = 3),
+        color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
           ),
         ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavBarIconButton(
+                icon: Ionicons.home_outline,
+                activeIcon: Ionicons.home,
+                label: 'Home',
+                isSelected: _selectedIndex == 0,
+                activeColor: activeColor,
+                onTap: () => setState(() => _selectedIndex = 0),
+              ),
+              _buildNavBarIconButton(
+                icon: Ionicons.list_outline,
+                activeIcon: Ionicons.list,
+                label: 'Logs',
+                isSelected: _selectedIndex == 1,
+                activeColor: activeColor,
+                onTap: () => setState(() => _selectedIndex = 1),
+              ),
+              _buildNavBarIconButton(
+                icon: Ionicons.notifications_outline,
+                activeIcon: Ionicons.notifications,
+                label: 'Notifications',
+                isSelected: _selectedIndex == 2,
+                activeColor: activeColor,
+                onTap: () => setState(() => _selectedIndex = 2),
+              ),
+              _buildNavBarIconButton(
+                icon: Ionicons.settings_outline,
+                activeIcon: Ionicons.settings,
+                label: 'Settings',
+                isSelected: _selectedIndex == 3,
+                activeColor: activeColor,
+                onTap: () => setState(() => _selectedIndex = 3),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1352,40 +1619,41 @@ class _UserDashboardState extends State<UserDashboard> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final Color textColor = isSelected
-        ? activeColor
-        : (isDark ? Colors.grey.shade500 : Colors.grey.shade600);
+    final Color inactiveColor = isDark ? Colors.grey[500]! : Colors.grey[400]!;
+    final Color textColor = isSelected ? activeColor : inactiveColor;
 
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16 : 12,
+          vertical: 8,
+        ),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: activeColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              )
+            : null,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(isSelected ? activeIcon : icon, color: textColor, size: 24),
+            Icon(
+              isSelected ? activeIcon : icon,
+              color: textColor,
+              size: isSelected ? 26 : 24,
+            ),
             const SizedBox(height: 4),
-            // Add the label text
             Text(
               label,
-              style: GoogleFonts.outfit(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color: textColor,
               ),
             ),
-            // Only show indicator dot for selected item if we have labels
-            if (isSelected)
-              Container(
-                margin: const EdgeInsets.only(top: 3),
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: activeColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
           ],
         ),
       ),

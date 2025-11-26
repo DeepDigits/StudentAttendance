@@ -64,10 +64,15 @@ def dashboard(request):
     
     # Load all students for the table
     students = UserProfile.objects.select_related('user').all().order_by('user__first_name', 'user__username')
+    
+    # Load all faculty for the table
+    from .models import FacultyProfile
+    faculty_list = FacultyProfile.objects.select_related('user').all().order_by('-user__date_joined')
 
     context = {
         'user_profile': user_profile,
         'students': students,
+        'faculty_list': faculty_list,
         'is_admin': request.user.is_superuser or request.user.is_staff,
     }
     return render(request, 'dashboard.html', context)

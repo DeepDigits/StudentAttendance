@@ -39,17 +39,7 @@ class _FacultySignupPageState extends State<FacultySignupPage> {
 
   String? _selectedDepartment;
 
-  final List<String> _departments = [
-    'Computer Science',
-    'Electronics',
-    'Mechanical',
-    'Civil',
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'English',
-    'Other',
-  ];
+  final List<String> _departments = ['BCA', 'BSc', 'BCom', 'Electronics'];
 
   Future<void> _pickImage() async {
     try {
@@ -179,49 +169,65 @@ class _FacultySignupPageState extends State<FacultySignupPage> {
     final Color subtleTextColor =
         theme.textTheme.bodySmall?.color ??
         (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
-    final Color cardColor = theme.cardColor;
-    final Color borderColor = isDark
-        ? Colors.grey.shade700
-        : Colors.grey.shade300;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor:
-            theme.appBarTheme.backgroundColor ?? Colors.transparent,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Ionicons.arrow_back,
-            color: theme.appBarTheme.iconTheme?.color ?? primaryColor,
-          ),
+          icon: Icon(Ionicons.arrow_back, color: textColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
+          padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Icon(Ionicons.school_outline, size: 50, color: primaryColor),
-              const SizedBox(height: 15),
+              // Beautiful Icon
+              Center(
+                child: Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: primaryColor.withOpacity(0.2),
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    Ionicons.school_outline,
+                    size: 34,
+                    color: primaryColor,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
               Text(
                 'Faculty Registration',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                style: GoogleFonts.outfit(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
                   color: textColor,
+                  letterSpacing: -0.5,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Create your faculty profile',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 14, color: subtleTextColor),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: subtleTextColor,
+                  height: 1.4,
+                ),
               ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 28),
               Form(
                 key: _formKey,
                 child: Column(
@@ -232,26 +238,37 @@ class _FacultySignupPageState extends State<FacultySignupPage> {
                         children: [
                           GestureDetector(
                             onTap: _pickImage,
-                            child: CircleAvatar(
-                              radius: 40,
-                              backgroundColor: isDark
-                                  ? primaryColor.withOpacity(0.2)
-                                  : Colors.grey.shade200,
-                              backgroundImage: _selectedProfilePic != null
-                                  ? FileImage(_selectedProfilePic!)
-                                  : null,
+                            child: Container(
+                              width: 90,
+                              height: 90,
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.grey.shade800
+                                    : Colors.grey.shade100,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.grey.shade700
+                                      : Colors.grey.shade300,
+                                  width: 2,
+                                ),
+                                image: _selectedProfilePic != null
+                                    ? DecorationImage(
+                                        image: FileImage(_selectedProfilePic!),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null,
+                              ),
                               child: _selectedProfilePic == null
                                   ? Icon(
                                       Ionicons.camera_outline,
-                                      size: 30,
-                                      color: isDark
-                                          ? primaryColor.withOpacity(0.7)
-                                          : Colors.grey.shade500,
+                                      size: 32,
+                                      color: subtleTextColor,
                                     )
                                   : null,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 10),
                           Text(
                             _selectedProfilePic == null
                                 ? "Add Profile Picture (Optional)"
@@ -259,12 +276,13 @@ class _FacultySignupPageState extends State<FacultySignupPage> {
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               color: subtleTextColor,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     _buildFormFieldLabel('Full Name', textColor),
                     TextFormField(
                       controller: _nameController,
@@ -323,11 +341,11 @@ class _FacultySignupPageState extends State<FacultySignupPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     _buildFormFieldLabel('Department', textColor),
                     DropdownButtonFormField<String>(
                       value: _selectedDepartment,
-                      style: TextStyle(color: textColor),
+                      style: GoogleFonts.inter(color: textColor, fontSize: 15),
                       dropdownColor: isDark
                           ? Colors.grey.shade800
                           : Colors.white,
@@ -352,17 +370,17 @@ class _FacultySignupPageState extends State<FacultySignupPage> {
                             icon: Ionicons.briefcase_outline,
                           ).copyWith(
                             contentPadding: const EdgeInsets.symmetric(
-                              vertical: 15,
+                              vertical: 16,
                               horizontal: 0,
                             ),
                             prefixIcon: Padding(
                               padding: const EdgeInsets.only(
-                                left: 15.0,
-                                right: 10.0,
+                                left: 16.0,
+                                right: 12.0,
                               ),
                               child: Icon(
                                 Ionicons.briefcase_outline,
-                                color: primaryColor,
+                                color: subtleTextColor,
                                 size: 20,
                               ),
                             ),
@@ -373,8 +391,9 @@ class _FacultySignupPageState extends State<FacultySignupPage> {
                       icon: Icon(
                         Ionicons.chevron_down_outline,
                         color: subtleTextColor,
+                        size: 20,
                       ),
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     const SizedBox(height: 12),
                     _buildFormFieldLabel('Phone Number', textColor),
@@ -484,81 +503,87 @@ class _FacultySignupPageState extends State<FacultySignupPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,
+                      height: 54,
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _signupFaculty,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
-                          foregroundColor: theme.colorScheme.onPrimary,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                          elevation: 2,
-                          disabledBackgroundColor: theme.disabledColor,
-                          disabledForegroundColor: isDark
-                              ? Colors.grey.shade700
-                              : Colors.grey.shade300,
+                          elevation: 0,
+                          disabledBackgroundColor: primaryColor.withOpacity(
+                            0.6,
+                          ),
                         ),
                         child: _isLoading
                             ? SizedBox(
-                                height: 20,
-                                width: 20,
+                                height: 22,
+                                width: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    theme.colorScheme.onPrimary,
+                                    Colors.white,
                                   ),
                                 ),
                               )
                             : Text(
                                 'Register as Faculty',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.outfit(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onPrimary,
+                                  color: Colors.white,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    Align(
-                      alignment: Alignment.center,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          if (Navigator.canPop(context)) Navigator.pop(context);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: primaryColor,
-                          side: BorderSide(
-                            color: primaryColor.withOpacity(0.5),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: primaryColor.withOpacity(0.3),
+                            width: 1.5,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 25,
-                            vertical: 12,
-                          ),
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        child: RichText(
-                          text: TextSpan(
-                            style: GoogleFonts.inter(fontSize: 13),
-                            children: [
-                              TextSpan(
-                                text: "Already have an account? ",
-                                style: TextStyle(color: subtleTextColor),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              if (Navigator.canPop(context))
+                                Navigator.pop(context);
+                            },
+                            borderRadius: BorderRadius.circular(14),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 28,
+                                vertical: 14,
                               ),
-                              TextSpan(
-                                text: 'Sign In',
-                                style: TextStyle(
-                                  color: primaryColor,
-                                  fontWeight: FontWeight.w600,
+                              child: RichText(
+                                text: TextSpan(
+                                  style: GoogleFonts.inter(fontSize: 14),
+                                  children: [
+                                    TextSpan(
+                                      text: "Already have an account? ",
+                                      style: TextStyle(color: subtleTextColor),
+                                    ),
+                                    TextSpan(
+                                      text: 'Sign In',
+                                      style: TextStyle(
+                                        color: primaryColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -576,12 +601,12 @@ class _FacultySignupPageState extends State<FacultySignupPage> {
 
   Widget _buildFormFieldLabel(String label, Color textColor) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: 10.0),
       child: Text(
         label,
         style: GoogleFonts.inter(
           fontSize: 13,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: textColor,
         ),
       ),
@@ -596,45 +621,49 @@ class _FacultySignupPageState extends State<FacultySignupPage> {
     final theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color primaryColor = theme.colorScheme.primary;
+    final Color subtleTextColor = isDark
+        ? Colors.grey.shade400
+        : Colors.grey.shade600;
     final Color borderColor = isDark
-        ? Colors.grey.shade600
+        ? Colors.grey.shade700
         : Colors.grey.shade300;
-    final Color fillColor = isDark
-        ? theme.inputDecorationTheme.fillColor ?? Colors.grey.shade800
-        : Colors.white;
+    final Color fillColor = isDark ? Colors.grey.shade900 : Colors.grey.shade50;
 
     return InputDecoration(
       hintText: hintText,
-      hintStyle: GoogleFonts.inter(color: theme.hintColor, fontSize: 14),
+      hintStyle: GoogleFonts.inter(
+        color: theme.hintColor.withOpacity(0.6),
+        fontSize: 14,
+      ),
       prefixIcon: icon != null
           ? Padding(
-              padding: const EdgeInsets.only(left: 15.0, right: 10.0),
-              child: Icon(icon, color: primaryColor, size: 20),
+              padding: const EdgeInsets.only(left: 16.0, right: 12.0),
+              child: Icon(icon, color: subtleTextColor, size: 20),
             )
           : null,
       prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
       filled: true,
       fillColor: fillColor,
-      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: borderColor),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: borderColor),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: primaryColor, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: BorderSide(color: theme.colorScheme.error, width: 1.0),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.red.shade400),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: BorderSide(color: theme.colorScheme.error, width: 1.5),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
       ),
     );
   }

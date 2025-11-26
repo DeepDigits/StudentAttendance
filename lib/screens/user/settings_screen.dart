@@ -4,12 +4,22 @@ import 'package:ionicons/ionicons.dart';
 import 'package:provider/provider.dart';
 import 'package:attendance_tracking/providers/settings_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:attendance_tracking/config/api_config.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class UserSettingsScreen extends StatefulWidget {
   final String? userName;
   final String? userEmail;
+  final String? userId;
 
-  const UserSettingsScreen({super.key, this.userName, this.userEmail});
+  const UserSettingsScreen({
+    super.key,
+    this.userName,
+    this.userEmail,
+    this.userId,
+  });
 
   @override
   State<UserSettingsScreen> createState() => _UserSettingsScreenState();
@@ -18,25 +28,81 @@ class UserSettingsScreen extends StatefulWidget {
 class _UserSettingsScreenState extends State<UserSettingsScreen> {
   final _storage = const FlutterSecureStorage();
   static const String _storageEmailKey = 'saved_email';
+
+  // Profile data from API
   String? _userName;
   String? _userEmail;
   String? _profilePicUrl;
+  String? _department;
+  String? _studentId;
+  String? _phone;
+  String? _section;
+  String? _yearOfStudy;
+  String? _firstName;
+  String? _lastName;
+  String? _username;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _fetchUserProfile();
   }
 
   Future<void> _loadUserData() async {
     final email = await _storage.read(key: _storageEmailKey);
     if (mounted) {
       setState(() {
-        _userEmail = email;
-        if (_userEmail != null && _userName == null) {
-          _userName = _userEmail!.split('@').first;
-          _userName = _userName![0].toUpperCase() + _userName!.substring(1);
-        }
+        _userEmail = email ?? widget.userEmail;
+        _userName = widget.userName;
+      });
+    }
+  }
+
+  Future<void> _fetchUserProfile() async {
+    if (widget.userId == null) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final response = await http
+          .get(
+            Uri.parse(
+              '${ApiConfig.baseUrl}/api/student-profile/${widget.userId}/',
+            ),
+            headers: {'Accept': 'application/json'},
+          )
+          .timeout(Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        setState(() {
+          _userName = data['fullName'] ?? widget.userName;
+          _userEmail = data['email'] ?? widget.userEmail;
+          _profilePicUrl = data['profilePicUrl'];
+          _department = data['department'];
+          _studentId = data['studentId'];
+          _phone = data['phone'];
+          _section = data['section'];
+          _yearOfStudy = data['yearOfStudy'];
+          _firstName = data['firstName'];
+          _lastName = data['lastName'];
+          _username = data['username'];
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching profile: $e');
+      setState(() {
+        _isLoading = false;
       });
     }
   }
@@ -46,14 +112,33 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
     final settingsProvider = Provider.of<SettingsProvider>(context);
     final theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
+    final Color textColor =
+        theme.textTheme.bodyLarge?.color ??
+        (isDark ? Colors.white : Colors.black87);
+    final Color subtleTextColor =
+        theme.textTheme.bodyMedium?.color ??
+        (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
+
+    if (_isLoading) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(50.0),
+          child: SpinKitFadingCircle(
+            color: settingsProvider.primaryColor,
+            size: 50.0,
+          ),
+        ),
+      );
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile Section
+          // Profile Section with Photo
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
@@ -63,61 +148,59 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                 width: 1,
               ),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: settingsProvider.primaryColor.withOpacity(
-                    0.1,
-                  ),
-                  child: Text(
-                    widget.userName?.isNotEmpty == true
-                        ? widget.userName![0].toUpperCase()
-                        : 'U',
-                    style: GoogleFonts.outfit(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: settingsProvider.primaryColor,
+                // Profile Picture
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        settingsProvider.primaryColor.withOpacity(0.7),
+                        settingsProvider.primaryColor.withOpacity(0.3),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.userName ?? 'User',
-                        style: GoogleFonts.outfit(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color:
-                              theme.textTheme.titleLarge?.color ??
-                              (isDark ? Colors.white : Colors.black87),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.userEmail ?? 'user@example.com',
-                        style: GoogleFonts.outfit(
-                          fontSize: 14,
-                          color:
-                              theme.textTheme.bodyMedium?.color ??
-                              (isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey.shade600),
-                        ),
-                      ),
-                    ],
+                  padding: const EdgeInsets.all(3),
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: isDark ? Colors.grey[800] : Colors.white,
+                    backgroundImage: _profilePicUrl != null
+                        ? NetworkImage(_profilePicUrl!)
+                        : null,
+                    child: _profilePicUrl == null
+                        ? Text(
+                            (_userName ?? widget.userName ?? 'U')[0]
+                                .toUpperCase(),
+                            style: GoogleFonts.outfit(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w600,
+                              color: settingsProvider.primaryColor,
+                            ),
+                          )
+                        : null,
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    // TODO: Implement edit profile
-                  },
-                  icon: Icon(
-                    Ionicons.create_outline,
-                    color: settingsProvider.primaryColor,
+                const SizedBox(height: 16),
+                // Name
+                Text(
+                  _userName ?? widget.userName ?? 'User',
+                  style: GoogleFonts.outfit(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Email
+                Text(
+                  _userEmail ?? widget.userEmail ?? 'user@example.com',
+                  style: GoogleFonts.outfit(
+                    fontSize: 14,
+                    color: subtleTextColor,
                   ),
                 ),
               ],
@@ -125,6 +208,113 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
           ),
 
           const SizedBox(height: 24),
+          _buildSectionHeader(context, 'Personal Information'),
+
+          // Personal Details Card
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                _buildDetailRow(
+                  context,
+                  icon: Ionicons.person_outline,
+                  label: 'First Name',
+                  value: _firstName ?? 'Not set',
+                  iconColor: settingsProvider.primaryColor,
+                ),
+                _buildDivider(isDark),
+                _buildDetailRow(
+                  context,
+                  icon: Ionicons.person_outline,
+                  label: 'Last Name',
+                  value: _lastName ?? 'Not set',
+                  iconColor: settingsProvider.primaryColor,
+                ),
+                _buildDivider(isDark),
+                _buildDetailRow(
+                  context,
+                  icon: Ionicons.at_outline,
+                  label: 'Username',
+                  value: _username ?? 'Not set',
+                  iconColor: Colors.teal,
+                ),
+                _buildDivider(isDark),
+                _buildDetailRow(
+                  context,
+                  icon: Ionicons.mail_outline,
+                  label: 'Email',
+                  value: _userEmail ?? widget.userEmail ?? 'Not set',
+                  iconColor: Colors.red,
+                ),
+                _buildDivider(isDark),
+                _buildDetailRow(
+                  context,
+                  icon: Ionicons.call_outline,
+                  label: 'Phone',
+                  value: _phone ?? 'Not set',
+                  iconColor: Colors.purple,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          _buildSectionHeader(context, 'Academic Information'),
+
+          // Academic Details Card
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                _buildDetailRow(
+                  context,
+                  icon: Ionicons.id_card_outline,
+                  label: 'Student ID / Roll Number',
+                  value: _studentId ?? 'Not set',
+                  iconColor: Colors.indigo,
+                ),
+                _buildDivider(isDark),
+                _buildDetailRow(
+                  context,
+                  icon: Ionicons.school_outline,
+                  label: 'Department',
+                  value: _department ?? 'Not set',
+                  iconColor: Colors.blue,
+                ),
+                _buildDivider(isDark),
+                _buildDetailRow(
+                  context,
+                  icon: Ionicons.calendar_outline,
+                  label: 'Year of Study',
+                  value: _yearOfStudy ?? 'Not set',
+                  iconColor: Colors.green,
+                ),
+                _buildDivider(isDark),
+                _buildDetailRow(
+                  context,
+                  icon: Ionicons.grid_outline,
+                  label: 'Section',
+                  value: _section ?? 'Not set',
+                  iconColor: Colors.orange,
+                ),
+              ],
+            ),
+          ),
+
           _buildSectionHeader(context, 'Appearance'),
           _buildSettingsCard(
             context: context,
@@ -322,6 +512,72 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         ),
       ),
       child: child,
+    );
+  }
+
+  Widget _buildDetailRow(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color iconColor,
+  }) {
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+    final Color textColor =
+        theme.textTheme.bodyLarge?.color ??
+        (isDark ? Colors.white : Colors.black87);
+    final Color subtleTextColor =
+        theme.textTheme.bodyMedium?.color ??
+        (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    color: subtleTextColor,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: GoogleFonts.outfit(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: textColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDivider(bool isDark) {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      indent: 56,
+      color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
     );
   }
 }

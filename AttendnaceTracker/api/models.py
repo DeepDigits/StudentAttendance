@@ -441,3 +441,38 @@ class HelpCenter(models.Model):
     def __str__(self):
         return f"{self.name} - {self.division.name}"
 
+
+# Model for Notifications
+class Notification(models.Model):
+    """
+    Stores user notifications for various events like attendance marking, reminders, etc.
+    """
+    NOTIFICATION_TYPES = [
+        ('success', 'Success'),
+        ('info', 'Information'),
+        ('warning', 'Warning'),
+        ('reminder', 'Reminder'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='info')
+    is_read = models.BooleanField(default=False)
+    icon = models.CharField(max_length=50, default='notifications')  # Icon name (e.g., 'checkmark_circle', 'time')
+    icon_color = models.CharField(max_length=20, default='#2ECC71')  # Hex color code
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Optional: link to related object
+    related_attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['user', 'is_read']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+

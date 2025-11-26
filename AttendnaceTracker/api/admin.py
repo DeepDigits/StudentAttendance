@@ -15,3 +15,6 @@ admin.site.register(Complaint)  # Register Complaint model for admin interface
 admin.site.register(WorkerFeedback)
 admin.site.register(Division)  # Register Division model for admin interface
 admin.site.register(HelpCenter)  # Register HelpCenter model for admin interface
+admin.site.register(Attendance)
+admin.site.register(UserProfile)
+admin.site.register(Notification)  # Register Notification model

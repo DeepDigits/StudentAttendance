@@ -370,16 +370,31 @@ def login_user(request):
         if user is not None:
             print(f"Authentication successful for user: {user.username}") # Log success
             user_type = 'user' # Default type
+            profile_id = None
+            department = None
             
             if user.is_superuser:
                 user_type = 'admin'
                 print(f"User {user.username} identified as admin.") # Log admin
+            elif hasattr(user, 'faculty_profile'):
+                user_type = 'faculty'
+                profile_id = user.faculty_profile.id
+                department = user.faculty_profile.department
+                print(f"User {user.username} identified as faculty.") # Log faculty
+            elif hasattr(user, 'student_profile'):
+                user_type = 'student'
+                profile_id = user.student_profile.id
+                department = user.student_profile.department
+                print(f"User {user.username} identified as student.") # Log student
             elif hasattr(user, 'worker_profile'):
                 user_type = 'worker'
+                profile_id = user.worker_profile.id
                 print(f"User {user.username} identified as worker.") # Log worker
             elif hasattr(user, 'contractor_profile'):
                 user_type = 'contractor'
-                print(f"User {user.username} identified as contractor.") # Log contractor            else:
+                profile_id = user.contractor_profile.id
+                print(f"User {user.username} identified as contractor.") # Log contractor
+            else:
                 print(f"User {user.username} identified as regular user.") # Log regular user
                 
             return Response({
@@ -390,6 +405,8 @@ def login_user(request):
                     'fullName': user.first_name or user.username, # Use username as fallback
                     'isAdmin': user.is_superuser, # Keep isAdmin for potential direct checks
                     'userType': user_type, # Add the determined user type
+                    'profileId': profile_id, # Profile ID for faculty/student
+                    'department': department, # Department for faculty/student
                 }
             }, status=status.HTTP_200_OK)
         else:

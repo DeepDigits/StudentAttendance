@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:attendance_tracking/config/api_config.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class NotificationsView extends StatefulWidget {
   final String userId;
@@ -13,83 +17,169 @@ class NotificationsView extends StatefulWidget {
 }
 
 class _NotificationsViewState extends State<NotificationsView> {
-  // Dummy notifications data
-  final List<Map<String, dynamic>> _notifications = [
-    {
-      'id': '1',
-      'title': 'Attendance Marked Successfully',
-      'message':
-          'Your attendance for Computer Science class has been marked present with 98.5% confidence.',
-      'type': 'success',
-      'timestamp': DateTime.now().subtract(Duration(minutes: 5)),
-      'isRead': false,
-    },
-    {
-      'id': '2',
-      'title': 'Class Reminder',
-      'message':
-          'Mathematics class is starting in 15 minutes. Room 305, Building A.',
-      'type': 'reminder',
-      'timestamp': DateTime.now().subtract(Duration(minutes: 30)),
-      'isRead': false,
-    },
-    {
-      'id': '3',
-      'title': 'Low Attendance Alert',
-      'message':
-          'Your attendance rate is below 75%. Please improve your attendance to avoid academic penalties.',
-      'type': 'warning',
-      'timestamp': DateTime.now().subtract(Duration(hours: 2)),
-      'isRead': false,
-    },
-    {
-      'id': '4',
-      'title': 'Face Recognition Updated',
-      'message':
-          'Your face recognition profile has been successfully updated with new training data.',
-      'type': 'info',
-      'timestamp': DateTime.now().subtract(Duration(hours: 5)),
-      'isRead': true,
-    },
-    {
-      'id': '5',
-      'title': 'Attendance Report Generated',
-      'message':
-          'Your monthly attendance report for October 2025 is now available for download.',
-      'type': 'info',
-      'timestamp': DateTime.now().subtract(Duration(days: 1)),
-      'isRead': true,
-    },
-    {
-      'id': '6',
-      'title': 'System Maintenance',
-      'message':
-          'The attendance system will undergo maintenance on Sunday, 2 AM - 4 AM. No attendance will be recorded during this time.',
-      'type': 'announcement',
-      'timestamp': DateTime.now().subtract(Duration(days: 2)),
-      'isRead': true,
-    },
-    {
-      'id': '7',
-      'title': 'Perfect Attendance Streak!',
-      'message':
-          'Congratulations! You have maintained perfect attendance for 7 consecutive days.',
-      'type': 'success',
-      'timestamp': DateTime.now().subtract(Duration(days: 3)),
-      'isRead': true,
-    },
-  ];
+  List<Map<String, dynamic>> _notifications = [];
+  bool _isLoading = true;
+  bool _isRefreshing = false;
 
-  void _markAsRead(String id) {
+  @override
+  void initState() {
+    super.initState();
+    _fetchNotifications();
+  }
+
+  Future<void> _fetchNotifications() async {
     setState(() {
-      final notification = _notifications.firstWhere(
-        (notif) => notif['id'] == id,
-      );
-      notification['isRead'] = true;
+      _isLoading = true;
+    });
+
+    try {
+      print('Fetching notifications for user: ${widget.userId}');
+      final response = await http
+          .get(
+            Uri.parse(
+              '${ApiConfig.baseUrl}/api/notifications/${widget.userId}/',
+            ),
+            headers: {'Accept': 'application/json'},
+          )
+          .timeout(Duration(seconds: 5));
+
+      print('Notifications API Response Status: ${response.statusCode}');
+      print('Notifications API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> notificationsData = json.decode(response.body);
+
+        setState(() {
+          _notifications = notificationsData.map((notif) {
+            DateTime timestamp;
+            try {
+              timestamp = DateTime.parse(
+                notif['createdAt'] ??
+                    notif['created_at'] ??
+                    DateTime.now().toIso8601String(),
+              );
+            } catch (e) {
+              timestamp = DateTime.now();
+            }
+            return {
+              'id': notif['id']?.toString() ?? 'unknown',
+              'title': notif['title'] ?? 'Notification',
+              'message': notif['description'] ?? notif['message'] ?? '',
+              'type': notif['type'] ?? notif['notification_type'] ?? 'info',
+              'timestamp': timestamp,
+              'isRead': notif['isRead'] ?? notif['is_read'] ?? false,
+              'icon': notif['icon'] ?? 'notifications',
+              'iconColor':
+                  notif['iconColor'] ?? notif['icon_color'] ?? '#3498DB',
+              'timeAgo': notif['time'] ?? '',
+            };
+          }).toList();
+          _isLoading = false;
+        });
+      } else {
+        print('Failed to fetch notifications: ${response.statusCode}');
+        _useDefaultNotifications();
+      }
+    } catch (e) {
+      print('Error fetching notifications: $e');
+      _useDefaultNotifications();
+    }
+  }
+
+  Future<void> _refreshNotifications() async {
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    try {
+      await _fetchNotifications();
+    } finally {
+      setState(() {
+        _isRefreshing = false;
+      });
+    }
+  }
+
+  void _useDefaultNotifications() {
+    // Use dummy data as fallback
+    final List<Map<String, dynamic>> defaultNotifications = [
+      {
+        'id': '1',
+        'title': 'Attendance Marked Successfully',
+        'message':
+            'Your attendance for Computer Science class has been marked present with 98.5% confidence.',
+        'type': 'success',
+        'timestamp': DateTime.now().subtract(Duration(minutes: 5)),
+        'isRead': false,
+        'icon': 'checkmark_circle',
+        'iconColor': '#2ECC71',
+      },
+      {
+        'id': '2',
+        'title': 'Class Reminder',
+        'message':
+            'Mathematics class is starting in 15 minutes. Room 305, Building A.',
+        'type': 'reminder',
+        'timestamp': DateTime.now().subtract(Duration(minutes: 30)),
+        'isRead': false,
+        'icon': 'time',
+        'iconColor': '#3498DB',
+      },
+      {
+        'id': '3',
+        'title': 'Low Attendance Alert',
+        'message':
+            'Your attendance rate is below 75%. Please improve your attendance to avoid academic penalties.',
+        'type': 'warning',
+        'timestamp': DateTime.now().subtract(Duration(hours: 2)),
+        'isRead': false,
+        'icon': 'alert_circle',
+        'iconColor': '#F39C12',
+      },
+    ];
+
+    setState(() {
+      _notifications = defaultNotifications;
+      _isLoading = false;
     });
   }
 
-  void _markAllAsRead() {
+  void _markAsRead(String id) async {
+    try {
+      final notificationId = int.tryParse(id);
+      if (notificationId != null) {
+        await http.post(
+          Uri.parse(
+            '${ApiConfig.baseUrl}/api/notifications/mark-read/$notificationId/',
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error marking notification as read: $e');
+    }
+
+    setState(() {
+      final notification = _notifications.firstWhere(
+        (notif) => notif['id'] == id,
+        orElse: () => {},
+      );
+      if (notification.isNotEmpty) {
+        notification['isRead'] = true;
+      }
+    });
+  }
+
+  void _markAllAsRead() async {
+    try {
+      await http.post(
+        Uri.parse(
+          '${ApiConfig.baseUrl}/api/notifications/mark-all-read/${widget.userId}/',
+        ),
+      );
+    } catch (e) {
+      print('Error marking all notifications as read: $e');
+    }
+
     setState(() {
       for (var notification in _notifications) {
         notification['isRead'] = true;
@@ -115,11 +205,38 @@ class _NotificationsViewState extends State<NotificationsView> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        elevation: 0,
+        title: Text(
+          'Notifications',
+          style: GoogleFonts.outfit(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: textColor,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: _isRefreshing
+                ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                    ),
+                  )
+                : Icon(Ionicons.refresh, color: textColor),
+            onPressed: _isRefreshing ? null : _refreshNotifications,
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
             // Header with Mark All as Read
-            if (unreadCount > 0)
+            if (unreadCount > 0 && !_isLoading)
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
@@ -164,48 +281,72 @@ class _NotificationsViewState extends State<NotificationsView> {
               ),
             // Notifications List
             Expanded(
-              child: _notifications.isEmpty
+              child: _isLoading
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Ionicons.notifications_off_outline,
-                            size: 64,
-                            color: subtleTextColor,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'No notifications yet',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              color: subtleTextColor,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'We\'ll notify you when something arrives',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: subtleTextColor.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
+                      child: SpinKitFadingCircle(
+                        color: primaryColor,
+                        size: 50.0,
                       ),
                     )
-                  : ListView.builder(
-                      padding: EdgeInsets.all(16),
-                      itemCount: _notifications.length,
-                      itemBuilder: (context, index) {
-                        final notification = _notifications[index];
-                        return _buildNotificationCard(
-                          notification,
-                          primaryColor,
-                          textColor,
-                          subtleTextColor,
-                          isDark,
-                        );
-                      },
+                  : RefreshIndicator(
+                      onRefresh: _refreshNotifications,
+                      color: primaryColor,
+                      child: _notifications.isEmpty
+                          ? ListView(
+                              physics: AlwaysScrollableScrollPhysics(),
+                              children: [
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.5,
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Ionicons.notifications_off_outline,
+                                          size: 64,
+                                          color: subtleTextColor,
+                                        ),
+                                        SizedBox(height: 16),
+                                        Text(
+                                          'No notifications yet',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            color: subtleTextColor,
+                                          ),
+                                        ),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          'Pull down to refresh',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            color: subtleTextColor.withOpacity(
+                                              0.7,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : ListView.builder(
+                              physics: AlwaysScrollableScrollPhysics(),
+                              padding: EdgeInsets.all(16),
+                              itemCount: _notifications.length,
+                              itemBuilder: (context, index) {
+                                final notification = _notifications[index];
+                                return _buildNotificationCard(
+                                  notification,
+                                  primaryColor,
+                                  textColor,
+                                  subtleTextColor,
+                                  isDark,
+                                );
+                              },
+                            ),
                     ),
             ),
           ],

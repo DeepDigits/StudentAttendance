@@ -1260,6 +1260,109 @@
 					</div>
 				</section>
 
+				<!-- Faculty Directory -->
+				<section id="faculty" class="glass-card rounded-3xl p-6 shadow-soft fade-in" style="animation-delay: 1.1s;">
+					<header class="flex items-center justify-between mb-4">
+						<div>
+							<h3 class="text-lg font-bold text-slate-900 dark:text-white">Faculty</h3>
+							<p class="text-xs text-slate-500 dark:text-slate-400">Directory of faculty members with quick actions.</p>
+						</div>
+						<div class="flex items-center gap-4">
+							<div class="relative">
+								<label for="facultySearch" class="sr-only">Search faculty</label>
+								<div class="relative">
+									<input id="facultySearch" type="search" placeholder="Search by name or ID" class="w-64 rounded-full border border-slate-200 bg-white/80 px-4 pr-10 py-2 text-sm placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-900/60 dark:placeholder:text-slate-500" />
+									<i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+								</div>
+							</div>
+						</div>
+					</header>
+
+					<div class="overflow-auto rounded-2xl border border-slate-200/60 dark:border-slate-800">
+						<table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+							<thead class="bg-slate-50/70 dark:bg-slate-900/60">
+								<tr>
+									<th class="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-300">Faculty</th>
+									<th class="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-300">Employee ID</th>
+									<th class="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-300">Department</th>
+									<th class="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-300">Status</th>
+									<th class="px-4 py-3 text-right font-semibold text-slate-600 dark:text-slate-300">Actions</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-slate-200 dark:divide-slate-800 bg-white/70 dark:bg-slate-900/70">
+								{% for f in faculty_list %}
+								<tr data-faculty-pk="{{ f.pk }}" data-status="{{ f.approval_status }}">
+									<td class="px-4 py-3">
+										<div class="flex items-center gap-3">
+											<img src="{% if f.profile_pic %}{{ f.profile_pic.url }}{% else %}https://ui-avatars.com/api/?name={{ f.user.first_name|default:f.user.username }}&background=6366f1&color=fff{% endif %}" class="h-9 w-9 rounded-full object-cover" alt="avatar"/>
+											<div>
+												<p class="font-semibold text-slate-800 dark:text-white">{{ f.user.first_name }} {{ f.user.last_name }}</p>
+												<p class="text-xs text-slate-500">{{ f.user.email|default:'—' }}</p>
+											</div>
+										</div>
+									</td>
+									<td class="px-4 py-3">{{ f.employee_id }}</td>
+									<td class="px-4 py-3">{{ f.department|default:'—' }}</td>
+									<td class="px-4 py-3">
+										{% if f.approval_status == 'Pending' %}
+										<span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-600">Pending</span>
+										{% elif f.approval_status == 'Approved' %}
+										<span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">Approved</span>
+										{% else %}
+										<span class="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-600">Rejected</span>
+										{% endif %}
+									</td>
+									<td class="px-4 py-3 text-right whitespace-nowrap">
+										{% if f.approval_status == 'Pending' %}
+										<!-- Pending: Show Approve/Reject buttons -->
+										<button class="btn-faculty-approve rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 hover:bg-emerald-100 dark:border-emerald-800/60 dark:bg-emerald-900/30"
+											data-pk="{{ f.pk }}">
+											<i class="fas fa-check mr-1"></i> Approve
+										</button>
+										<button class="btn-faculty-reject ml-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-100 dark:border-rose-800/60 dark:bg-rose-900/30"
+											data-pk="{{ f.pk }}">
+											<i class="fas fa-times mr-1"></i> Reject
+										</button>
+										{% else %}
+										<!-- Approved/Rejected: Show View/Edit/Delete buttons -->
+										<button class="btn-faculty-view rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-brand-500 hover:text-brand-600 dark:border-slate-700 dark:text-slate-300"
+											data-pk="{{ f.pk }}"
+											data-name="{{ f.user.first_name }} {{ f.user.last_name }}"
+											data-email="{{ f.user.email }}"
+											data-phone="{{ f.phone }}"
+											data-employee_id="{{ f.employee_id }}"
+											data-department="{{ f.department }}"
+											data-qualifications="{{ f.qualifications }}"
+											data-status="{{ f.approval_status }}"
+											data-avatar="{% if f.profile_pic %}{{ f.profile_pic.url }}{% else %}https://ui-avatars.com/api/?name={{ f.user.first_name|default:f.user.username }}&background=6366f1&color=fff{% endif %}">
+											<i class="fas fa-eye mr-1"></i> View
+										</button>
+										<button class="btn-faculty-edit ml-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-amber-500 hover:text-amber-600 dark:border-slate-700 dark:text-slate-300"
+											data-pk="{{ f.pk }}"
+											data-first_name="{{ f.user.first_name }}"
+											data-last_name="{{ f.user.last_name }}"
+											data-email="{{ f.user.email }}"
+											data-phone="{{ f.phone }}"
+											data-employee_id="{{ f.employee_id }}"
+											data-department="{{ f.department }}"
+											data-qualifications="{{ f.qualifications }}">
+											<i class="fas fa-pen mr-1"></i> Edit
+										</button>
+										<button class="btn-faculty-delete ml-2 rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:border-rose-800/60"
+											data-pk="{{ f.pk }}">
+											<i class="fas fa-trash mr-1"></i> Delete
+										</button>
+										{% endif %}
+									</td>
+								</tr>
+								{% empty %}
+								<tr><td colspan="5" class="px-4 py-6 text-center text-slate-500">No faculty members found.</td></tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</section>
+
 				<!-- <section class="glass-card rounded-3xl border accent-border p-6 shadow-soft fade-in" style="animation-delay: 1s; background-image: linear-gradient(to bottom right, rgba(var(--accent-500-rgb),0.06), rgba(99,102,241,0));">
 					<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 						<div>
@@ -1894,6 +1997,494 @@ function getCSRFToken(){
 			alert('Failed to delete student');
 		}
 	});
+})();
+
+// Faculty Modals and Handlers
+(function(){
+	// Inject Faculty Modals HTML at end of body
+	const facultyModalsHtml = `
+	<!-- Faculty View Modal -->
+	<div id="facultyViewModal" class="fixed inset-0 z-[1000] hidden items-end md:items-center justify-center">
+		<div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"></div>
+		<div class="relative w-full md:w-[640px] max-w-[92vw] rounded-3xl glass-card border border-slate-200/60 dark:border-slate-800 overflow-hidden shadow-2xl">
+			<header class="flex items-center justify-between px-5 py-4 border-b border-slate-200/60 dark:border-slate-800">
+				<h4 class="text-lg font-bold text-slate-900 dark:text-white">Faculty Details</h4>
+				<button data-close="faculty-view" class="rounded-full border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-600 hover:border-brand-500 hover:text-brand-600 dark:border-slate-700 dark:text-slate-300"><i class='fas fa-times'></i></button>
+			</header>
+			<div class="p-5 space-y-4">
+				<div class="flex items-center gap-4">
+					<img id="fvAvatar" class="h-16 w-16 rounded-full object-cover border-2 border-white shadow"/>
+					<div>
+						<p class="font-semibold text-lg text-slate-900 dark:text-white" id="fvName">—</p>
+						<p class="text-sm text-slate-500" id="fvEmail">—</p>
+						<span id="fvStatus" class="mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold">—</span>
+					</div>
+				</div>
+				<div class="grid gap-3 sm:grid-cols-2 mt-4">
+					<div class="rounded-2xl border border-slate-200/60 p-3 dark:border-slate-800">
+						<p class="text-xs text-slate-500">Employee ID</p>
+						<p class="text-sm font-semibold text-slate-900 dark:text-white" id="fvEmployeeId">—</p>
+					</div>
+					<div class="rounded-2xl border border-slate-200/60 p-3 dark:border-slate-800">
+						<p class="text-xs text-slate-500">Department</p>
+						<p class="text-sm font-semibold text-slate-900 dark:text-white" id="fvDepartment">—</p>
+					</div>
+					<div class="rounded-2xl border border-slate-200/60 p-3 dark:border-slate-800">
+						<p class="text-xs text-slate-500">Phone</p>
+						<p class="text-sm font-semibold text-slate-900 dark:text-white" id="fvPhone">—</p>
+					</div>
+					<div class="rounded-2xl border border-slate-200/60 p-3 dark:border-slate-800 sm:col-span-2">
+						<p class="text-xs text-slate-500">Qualifications</p>
+						<p class="text-sm font-semibold text-slate-900 dark:text-white" id="fvQualifications">—</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Faculty Edit Modal -->
+	<div id="facultyEditModal" class="fixed inset-0 z-[1000] hidden items-end md:items-center justify-center">
+		<div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"></div>
+		<div class="relative w-full md:w-[640px] max-w-[92vw] rounded-3xl glass-card border border-slate-200/60 dark:border-slate-800 overflow-hidden shadow-2xl">
+			<header class="flex items-center justify-between px-5 py-4 border-b border-slate-200/60 dark:border-slate-800">
+				<h4 class="text-lg font-bold text-slate-900 dark:text-white">Edit Faculty</h4>
+				<button data-close="faculty-edit" class="rounded-full border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-600 hover:border-amber-500 hover:text-amber-600 dark:border-slate-700 dark:text-slate-300"><i class='fas fa-times'></i></button>
+			</header>
+			<form id="editFacultyForm" class="p-5 space-y-4">
+				<input type="hidden" name="pk" id="editFacultyPk" />
+				<div class="grid gap-4 sm:grid-cols-2">
+					<div>
+						<label class="text-xs text-slate-500">First Name</label>
+						<input id="editFacultyFirstName" name="first_name" class="mt-1 w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" required />
+					</div>
+					<div>
+						<label class="text-xs text-slate-500">Last Name</label>
+						<input id="editFacultyLastName" name="last_name" class="mt-1 w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+					</div>
+					<div>
+						<label class="text-xs text-slate-500">Email</label>
+						<input id="editFacultyEmail" name="email" type="email" class="mt-1 w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" required />
+					</div>
+					<div>
+						<label class="text-xs text-slate-500">Phone</label>
+						<input id="editFacultyPhone" name="phone" class="mt-1 w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+					</div>
+					<div>
+						<label class="text-xs text-slate-500">Employee ID</label>
+						<input id="editFacultyEmployeeId" name="employee_id" class="mt-1 w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+					</div>
+					<div>
+						<label class="text-xs text-slate-500">Department</label>
+						<input id="editFacultyDepartment" name="department" class="mt-1 w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+					</div>
+					<div class="sm:col-span-2">
+						<label class="text-xs text-slate-500">Qualifications</label>
+						<textarea id="editFacultyQualifications" name="qualifications" rows="2" class="mt-1 w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"></textarea>
+					</div>
+				</div>
+				<div class="pt-3 flex justify-end gap-2">
+					<button type="button" data-close="faculty-edit" class="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">Cancel</button>
+					<button type="submit" class="rounded-full accent-gradient-r px-4 py-2 text-xs font-semibold text-white shadow-soft">Save changes</button>
+				</div>
+				<p id="editFacultyError" class="text-xs text-rose-600 hidden"></p>
+			</form>
+		</div>
+	</div>
+
+	<!-- Faculty Delete Modal -->
+	<div id="facultyDeleteModal" class="fixed inset-0 z-[1000] hidden items-end md:items-center justify-center">
+		<div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"></div>
+		<div class="relative w-full md:w-[460px] max-w-[92vw] rounded-2xl glass-card border border-slate-200/60 dark:border-slate-800 overflow-hidden shadow-2xl">
+			<header class="px-5 py-4 border-b border-slate-200/60 dark:border-slate-800">
+				<h4 class="text-base font-bold text-slate-900 dark:text-white">Delete Faculty</h4>
+			</header>
+			<div class="p-5">
+				<p class="text-sm text-slate-600 dark:text-slate-300">Are you sure you want to delete this faculty member? This action cannot be undone.</p>
+				<div class="mt-5 flex justify-end gap-2">
+					<button type="button" data-close="faculty-delete" class="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">Cancel</button>
+					<button id="confirmFacultyDeleteBtn" class="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Faculty Reject Modal (with reason) -->
+	<div id="facultyRejectModal" class="fixed inset-0 z-[1000] hidden items-end md:items-center justify-center">
+		<div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"></div>
+		<div class="relative w-full md:w-[460px] max-w-[92vw] rounded-2xl glass-card border border-slate-200/60 dark:border-slate-800 overflow-hidden shadow-2xl">
+			<header class="px-5 py-4 border-b border-slate-200/60 dark:border-slate-800">
+				<h4 class="text-base font-bold text-slate-900 dark:text-white">Reject Faculty</h4>
+			</header>
+			<div class="p-5">
+				<p class="text-sm text-slate-600 dark:text-slate-300 mb-3">Please provide a reason for rejection (optional):</p>
+				<textarea id="rejectFacultyReason" rows="3" class="w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="Enter rejection reason..."></textarea>
+				<div class="mt-5 flex justify-end gap-2">
+					<button type="button" data-close="faculty-reject" class="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">Cancel</button>
+					<button id="confirmFacultyRejectBtn" class="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white">Reject</button>
+				</div>
+			</div>
+		</div>
+	</div>`;
+	document.body.insertAdjacentHTML('beforeend', facultyModalsHtml);
+
+	// Modal helpers
+	const fViewModal = document.getElementById('facultyViewModal');
+	const fEditModal = document.getElementById('facultyEditModal');
+	const fDeleteModal = document.getElementById('facultyDeleteModal');
+	const fRejectModal = document.getElementById('facultyRejectModal');
+
+	function openFacultyModal(el){ el.classList.remove('hidden'); el.classList.add('flex'); }
+	function closeFacultyModal(el){ el.classList.add('hidden'); el.classList.remove('flex'); }
+
+	document.querySelectorAll('[data-close="faculty-view"]').forEach(b=> b.addEventListener('click', ()=> closeFacultyModal(fViewModal)));
+	document.querySelectorAll('[data-close="faculty-edit"]').forEach(b=> b.addEventListener('click', ()=> closeFacultyModal(fEditModal)));
+	document.querySelectorAll('[data-close="faculty-delete"]').forEach(b=> b.addEventListener('click', ()=> closeFacultyModal(fDeleteModal)));
+	document.querySelectorAll('[data-close="faculty-reject"]').forEach(b=> b.addEventListener('click', ()=> closeFacultyModal(fRejectModal)));
+
+	// View Faculty
+	document.querySelectorAll('.btn-faculty-view').forEach(btn => {
+		btn.addEventListener('click', ()=>{
+			document.getElementById('fvName').textContent = btn.getAttribute('data-name') || '—';
+			document.getElementById('fvEmail').textContent = btn.getAttribute('data-email') || '—';
+			document.getElementById('fvPhone').textContent = btn.getAttribute('data-phone') || '—';
+			document.getElementById('fvEmployeeId').textContent = btn.getAttribute('data-employee_id') || '—';
+			document.getElementById('fvDepartment').textContent = btn.getAttribute('data-department') || '—';
+			document.getElementById('fvQualifications').textContent = btn.getAttribute('data-qualifications') || '—';
+			document.getElementById('fvAvatar').src = btn.getAttribute('data-avatar') || '';
+			
+			const status = btn.getAttribute('data-status');
+			const statusEl = document.getElementById('fvStatus');
+			statusEl.textContent = status || '—';
+			if (status === 'Approved') {
+				statusEl.className = 'mt-1 inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-600';
+			} else if (status === 'Rejected') {
+				statusEl.className = 'mt-1 inline-block rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-600';
+			} else {
+				statusEl.className = 'mt-1 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-600';
+			}
+			
+			openFacultyModal(fViewModal);
+		});
+	});
+
+	// Edit Faculty - Open modal
+	document.querySelectorAll('.btn-faculty-edit').forEach(btn => {
+		btn.addEventListener('click', ()=>{
+			document.getElementById('editFacultyPk').value = btn.getAttribute('data-pk');
+			document.getElementById('editFacultyFirstName').value = btn.getAttribute('data-first_name') || '';
+			document.getElementById('editFacultyLastName').value = btn.getAttribute('data-last_name') || '';
+			document.getElementById('editFacultyEmail').value = btn.getAttribute('data-email') || '';
+			document.getElementById('editFacultyPhone').value = btn.getAttribute('data-phone') || '';
+			document.getElementById('editFacultyEmployeeId').value = btn.getAttribute('data-employee_id') || '';
+			document.getElementById('editFacultyDepartment').value = btn.getAttribute('data-department') || '';
+			document.getElementById('editFacultyQualifications').value = btn.getAttribute('data-qualifications') || '';
+			document.getElementById('editFacultyError').classList.add('hidden');
+			openFacultyModal(fEditModal);
+		});
+	});
+
+	// Edit Faculty - Submit form
+	document.getElementById('editFacultyForm').addEventListener('submit', async (e)=>{
+		e.preventDefault();
+		const pk = document.getElementById('editFacultyPk').value;
+		const url = '/api/faculty/' + pk + '/update/';
+		const payload = {
+			first_name: document.getElementById('editFacultyFirstName').value,
+			last_name: document.getElementById('editFacultyLastName').value,
+			email: document.getElementById('editFacultyEmail').value,
+			phone: document.getElementById('editFacultyPhone').value,
+			employee_id: document.getElementById('editFacultyEmployeeId').value,
+			department: document.getElementById('editFacultyDepartment').value,
+			qualifications: document.getElementById('editFacultyQualifications').value,
+		};
+		try {
+			const res = await fetch(url, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+				body: JSON.stringify(payload)
+			});
+			const data = await res.json();
+			if (!res.ok) throw data;
+			
+			// Update the row in the table
+			const row = document.querySelector('tr[data-faculty-pk="' + pk + '"]');
+			if (row) {
+				const nameEl = row.querySelector('td:nth-child(1) p.font-semibold');
+				const emailEl = row.querySelector('td:nth-child(1) p.text-xs');
+				const idEl = row.querySelector('td:nth-child(2)');
+				const deptEl = row.querySelector('td:nth-child(3)');
+				if (nameEl) nameEl.textContent = data.faculty.name;
+				if (emailEl) emailEl.textContent = data.faculty.email || '—';
+				if (idEl) idEl.textContent = data.faculty.employee_id;
+				if (deptEl) deptEl.textContent = data.faculty.department || '—';
+				
+				// Update data attributes on buttons
+				const viewBtn = row.querySelector('.btn-faculty-view');
+				const editBtn = row.querySelector('.btn-faculty-edit');
+				if (viewBtn) {
+					viewBtn.setAttribute('data-name', data.faculty.name);
+					viewBtn.setAttribute('data-email', data.faculty.email);
+					viewBtn.setAttribute('data-phone', data.faculty.phone || '');
+					viewBtn.setAttribute('data-employee_id', data.faculty.employee_id);
+					viewBtn.setAttribute('data-department', data.faculty.department || '');
+					viewBtn.setAttribute('data-qualifications', data.faculty.qualifications || '');
+				}
+				if (editBtn) {
+					editBtn.setAttribute('data-first_name', data.faculty.first_name);
+					editBtn.setAttribute('data-last_name', data.faculty.last_name);
+					editBtn.setAttribute('data-email', data.faculty.email);
+					editBtn.setAttribute('data-phone', data.faculty.phone || '');
+					editBtn.setAttribute('data-employee_id', data.faculty.employee_id);
+					editBtn.setAttribute('data-department', data.faculty.department || '');
+					editBtn.setAttribute('data-qualifications', data.faculty.qualifications || '');
+				}
+			}
+			closeFacultyModal(fEditModal);
+		} catch(err) {
+			const errBox = document.getElementById('editFacultyError');
+			errBox.classList.remove('hidden');
+			errBox.textContent = err.error || 'Failed to save changes.';
+		}
+	});
+
+	// Delete Faculty
+	let deleteFacultyPk = null;
+	document.querySelectorAll('.btn-faculty-delete').forEach(btn => {
+		btn.addEventListener('click', ()=>{
+			deleteFacultyPk = btn.getAttribute('data-pk');
+			openFacultyModal(fDeleteModal);
+		});
+	});
+	document.getElementById('confirmFacultyDeleteBtn').addEventListener('click', async ()=>{
+		if (!deleteFacultyPk) return;
+		const url = '/api/faculty/' + deleteFacultyPk + '/delete/';
+		try {
+			const res = await fetch(url, { method: 'DELETE', headers: { 'X-CSRFToken': getCSRFToken() } });
+			const data = await res.json();
+			if (!res.ok) throw data;
+			// Remove row from table
+			const row = document.querySelector('tr[data-faculty-pk="' + deleteFacultyPk + '"]');
+			if (row) row.remove();
+			closeFacultyModal(fDeleteModal);
+			deleteFacultyPk = null;
+		} catch(err) {
+			closeFacultyModal(fDeleteModal);
+			deleteFacultyPk = null;
+			alert('Failed to delete faculty');
+		}
+	});
+
+	// Approve Faculty
+	document.querySelectorAll('.btn-faculty-approve').forEach(btn => {
+		btn.addEventListener('click', async ()=>{
+			const pk = btn.getAttribute('data-pk');
+			const url = '/api/faculty/approve/' + pk + '/';
+			try {
+				const res = await fetch(url, { method: 'POST', headers: { 'X-CSRFToken': getCSRFToken() } });
+				const data = await res.json();
+				if (!res.ok) throw data;
+				// Update the row: change status badge and swap buttons
+				const row = document.querySelector('tr[data-faculty-pk="' + pk + '"]');
+				if (row) {
+					row.setAttribute('data-status', 'Approved');
+					// Update status badge
+					const statusCell = row.querySelector('td:nth-child(4)');
+					if (statusCell) {
+						statusCell.innerHTML = '<span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">Approved</span>';
+					}
+					// Get faculty info from row for new buttons
+					const nameEl = row.querySelector('td:nth-child(1) p.font-semibold');
+					const emailEl = row.querySelector('td:nth-child(1) p.text-xs');
+					const idEl = row.querySelector('td:nth-child(2)');
+					const deptEl = row.querySelector('td:nth-child(3)');
+					const avatarEl = row.querySelector('td:nth-child(1) img');
+					
+					// Replace action buttons
+					const actionsCell = row.querySelector('td:nth-child(5)');
+					if (actionsCell) {
+						actionsCell.innerHTML = 
+							'<button class="btn-faculty-view rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-brand-500 hover:text-brand-600 dark:border-slate-700 dark:text-slate-300" ' +
+							'data-pk="' + pk + '" ' +
+							'data-name="' + (nameEl ? nameEl.textContent : '') + '" ' +
+							'data-email="' + (emailEl ? emailEl.textContent : '') + '" ' +
+							'data-employee_id="' + (idEl ? idEl.textContent : '') + '" ' +
+							'data-department="' + (deptEl ? deptEl.textContent : '') + '" ' +
+							'data-status="Approved" ' +
+							'data-avatar="' + (avatarEl ? avatarEl.src : '') + '">' +
+							'<i class="fas fa-eye mr-1"></i> View</button>' +
+							'<button class="btn-faculty-edit ml-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-amber-500 hover:text-amber-600 dark:border-slate-700 dark:text-slate-300" ' +
+							'data-pk="' + pk + '">' +
+							'<i class="fas fa-pen mr-1"></i> Edit</button>' +
+							'<button class="btn-faculty-delete ml-2 rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:border-rose-800/60" ' +
+							'data-pk="' + pk + '">' +
+							'<i class="fas fa-trash mr-1"></i> Delete</button>';
+						// Re-bind event listeners for new buttons
+						bindFacultyButtons(row);
+					}
+				}
+			} catch(err) {
+				alert('Failed to approve faculty: ' + (err.error || 'Unknown error'));
+			}
+		});
+	});
+
+	// Reject Faculty - Open modal
+	let rejectFacultyPk = null;
+	document.querySelectorAll('.btn-faculty-reject').forEach(btn => {
+		btn.addEventListener('click', ()=>{
+			rejectFacultyPk = btn.getAttribute('data-pk');
+			document.getElementById('rejectFacultyReason').value = '';
+			openFacultyModal(fRejectModal);
+		});
+	});
+	document.getElementById('confirmFacultyRejectBtn').addEventListener('click', async ()=>{
+		if (!rejectFacultyPk) return;
+		const reason = document.getElementById('rejectFacultyReason').value;
+		const url = '/api/faculty/reject/' + rejectFacultyPk + '/';
+		try {
+			const res = await fetch(url, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+				body: JSON.stringify({ reason: reason })
+			});
+			const data = await res.json();
+			if (!res.ok) throw data;
+			// Update the row
+			const row = document.querySelector('tr[data-faculty-pk="' + rejectFacultyPk + '"]');
+			if (row) {
+				row.setAttribute('data-status', 'Rejected');
+				// Update status badge
+				const statusCell = row.querySelector('td:nth-child(4)');
+				if (statusCell) {
+					statusCell.innerHTML = '<span class="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-600">Rejected</span>';
+				}
+				// Get faculty info for new buttons
+				const nameEl = row.querySelector('td:nth-child(1) p.font-semibold');
+				const emailEl = row.querySelector('td:nth-child(1) p.text-xs');
+				const idEl = row.querySelector('td:nth-child(2)');
+				const deptEl = row.querySelector('td:nth-child(3)');
+				const avatarEl = row.querySelector('td:nth-child(1) img');
+				
+				// Replace action buttons
+				const actionsCell = row.querySelector('td:nth-child(5)');
+				if (actionsCell) {
+					actionsCell.innerHTML = 
+						'<button class="btn-faculty-view rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-brand-500 hover:text-brand-600 dark:border-slate-700 dark:text-slate-300" ' +
+						'data-pk="' + rejectFacultyPk + '" ' +
+						'data-name="' + (nameEl ? nameEl.textContent : '') + '" ' +
+						'data-email="' + (emailEl ? emailEl.textContent : '') + '" ' +
+						'data-employee_id="' + (idEl ? idEl.textContent : '') + '" ' +
+						'data-department="' + (deptEl ? deptEl.textContent : '') + '" ' +
+						'data-status="Rejected" ' +
+						'data-avatar="' + (avatarEl ? avatarEl.src : '') + '">' +
+						'<i class="fas fa-eye mr-1"></i> View</button>' +
+						'<button class="btn-faculty-edit ml-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-amber-500 hover:text-amber-600 dark:border-slate-700 dark:text-slate-300" ' +
+						'data-pk="' + rejectFacultyPk + '">' +
+						'<i class="fas fa-pen mr-1"></i> Edit</button>' +
+						'<button class="btn-faculty-delete ml-2 rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:border-rose-800/60" ' +
+						'data-pk="' + rejectFacultyPk + '">' +
+						'<i class="fas fa-trash mr-1"></i> Delete</button>';
+					// Re-bind event listeners
+					bindFacultyButtons(row);
+				}
+			}
+			closeFacultyModal(fRejectModal);
+			rejectFacultyPk = null;
+		} catch(err) {
+			alert('Failed to reject faculty: ' + (err.error || 'Unknown error'));
+		}
+	});
+
+	// Helper to rebind event listeners for dynamically created buttons
+	function bindFacultyButtons(row) {
+		const viewBtn = row.querySelector('.btn-faculty-view');
+		const editBtn = row.querySelector('.btn-faculty-edit');
+		const deleteBtn = row.querySelector('.btn-faculty-delete');
+		
+		if (viewBtn) {
+			viewBtn.addEventListener('click', ()=>{
+				document.getElementById('fvName').textContent = viewBtn.getAttribute('data-name') || '—';
+				document.getElementById('fvEmail').textContent = viewBtn.getAttribute('data-email') || '—';
+				document.getElementById('fvPhone').textContent = viewBtn.getAttribute('data-phone') || '—';
+				document.getElementById('fvEmployeeId').textContent = viewBtn.getAttribute('data-employee_id') || '—';
+				document.getElementById('fvDepartment').textContent = viewBtn.getAttribute('data-department') || '—';
+				document.getElementById('fvQualifications').textContent = viewBtn.getAttribute('data-qualifications') || '—';
+				document.getElementById('fvAvatar').src = viewBtn.getAttribute('data-avatar') || '';
+				const status = viewBtn.getAttribute('data-status');
+				const statusEl = document.getElementById('fvStatus');
+				statusEl.textContent = status || '—';
+				if (status === 'Approved') {
+					statusEl.className = 'mt-1 inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-600';
+				} else if (status === 'Rejected') {
+					statusEl.className = 'mt-1 inline-block rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-600';
+				} else {
+					statusEl.className = 'mt-1 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-600';
+				}
+				openFacultyModal(fViewModal);
+			});
+		}
+		
+		if (editBtn) {
+			editBtn.addEventListener('click', ()=>{
+				document.getElementById('editFacultyPk').value = editBtn.getAttribute('data-pk');
+				document.getElementById('editFacultyFirstName').value = editBtn.getAttribute('data-first_name') || '';
+				document.getElementById('editFacultyLastName').value = editBtn.getAttribute('data-last_name') || '';
+				document.getElementById('editFacultyEmail').value = editBtn.getAttribute('data-email') || '';
+				document.getElementById('editFacultyPhone').value = editBtn.getAttribute('data-phone') || '';
+				document.getElementById('editFacultyEmployeeId').value = editBtn.getAttribute('data-employee_id') || '';
+				document.getElementById('editFacultyDepartment').value = editBtn.getAttribute('data-department') || '';
+				document.getElementById('editFacultyQualifications').value = editBtn.getAttribute('data-qualifications') || '';
+				document.getElementById('editFacultyError').classList.add('hidden');
+				openFacultyModal(fEditModal);
+			});
+		}
+		
+		if (deleteBtn) {
+			deleteBtn.addEventListener('click', ()=>{
+				deleteFacultyPk = deleteBtn.getAttribute('data-pk');
+				openFacultyModal(fDeleteModal);
+			});
+		}
+	}
+
+	// Faculty search/filter (client-side)
+	const facultySearchInput = document.getElementById('facultySearch');
+	if (facultySearchInput) {
+		const tbody = document.querySelector('#faculty table tbody');
+		if (tbody) {
+			let noRow = tbody.querySelector('.no-results-faculty');
+			if (!noRow) {
+				noRow = document.createElement('tr');
+				noRow.className = 'no-results-faculty hidden';
+				noRow.innerHTML = '<td colspan="5" class="px-4 py-6 text-center text-slate-500">No faculty match your search.</td>';
+				tbody.appendChild(noRow);
+			}
+
+			function normalize(s){ return (s||'').toString().trim().toLowerCase(); }
+			function runFacultyFilter(){
+				const q = normalize(facultySearchInput.value);
+				const rows = Array.from(tbody.querySelectorAll('tr[data-faculty-pk]'));
+				let visible = 0;
+				rows.forEach(row=>{
+					const name = normalize(row.querySelector('td:nth-child(1) p.font-semibold')?.textContent);
+					const empId = normalize(row.querySelector('td:nth-child(2)')?.textContent);
+					if (!q || name.includes(q) || empId.includes(q)){
+						row.style.display = '';
+						visible++;
+					} else {
+						row.style.display = 'none';
+					}
+				});
+				if (visible === 0) noRow.classList.remove('hidden'); else noRow.classList.add('hidden');
+			}
+
+			let timer = null;
+			['input','keyup'].forEach(ev=> facultySearchInput.addEventListener(ev, ()=>{
+				clearTimeout(timer);
+				timer = setTimeout(runFacultyFilter, 100);
+			}));
+		}
+	}
 })();
 
 // Live Dashboard Updates
