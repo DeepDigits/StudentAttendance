@@ -176,6 +176,13 @@ urlpatterns = [
     path('api/faculty/approved/', faculty_views.approved_faculty_list, name='approved_faculty_list'),
     path('api/faculty/approve/<int:pk>/', faculty_views.approve_faculty, name='approve_faculty'),
     path('api/faculty/reject/<int:pk>/', faculty_views.reject_faculty, name='reject_faculty'),
+    # Faculty Dashboard APIs
+    path('api/faculty/<int:pk>/students/', faculty_views.get_faculty_students, name='get_faculty_students'),
+    path('api/faculty/<int:pk>/sent-notifications/', faculty_views.get_faculty_sent_notifications, name='get_faculty_sent_notifications'),
+    path('api/faculty/<int:pk>/dashboard-stats/', faculty_views.get_faculty_dashboard_stats, name='get_faculty_dashboard_stats'),
+    path('api/faculty/department-students/', faculty_views.get_department_students, name='get_department_students'),
+    path('api/faculty/department-attendance/', faculty_views.get_department_attendance, name='get_department_attendance'),
+    path('api/faculty/send-notification/', faculty_views.send_notification_to_students, name='send_notification_to_students'),
     
     # Student URLs
     # Student attendance data endpoints (MUST come before approve/reject patterns to avoid conflicts)

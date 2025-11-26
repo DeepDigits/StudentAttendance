@@ -315,144 +315,162 @@ class _UserDashboardViewState extends State<UserDashboardView> {
       'EEEE, MMM d • h:mm a',
     ).format(now);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Profile and Welcome Text Row
-        Row(
-          children: [
-            // Profile Avatar with gradient border
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    primaryColor.withOpacity(0.7),
-                    primaryColor.withOpacity(0.3),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF2A2A2A), const Color(0xFF1E1E1E)]
+              : [Colors.white, Colors.grey.shade50],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Profile Avatar with gradient border
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [primaryColor, primaryColor.withOpacity(0.5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: CircleAvatar(
+              radius: 32,
+              backgroundColor: isDark ? Colors.grey[800] : Colors.white,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(32),
+                child: Image.network(
+                  profilePicUrl ?? defaultProfilePicUrl,
+                  width: 64,
+                  height: 64,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    final initials = name.isNotEmpty
+                        ? name[0].toUpperCase()
+                        : '?';
+                    return Center(
+                      child: Text(
+                        initials,
+                        style: GoogleFonts.outfit(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w600,
+                          color: primaryColor,
+                        ),
+                      ),
+                    );
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.0,
+                        color: primaryColor,
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+
+          // Welcome Text Column
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome Back,',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: subtleTextColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  name,
+                  style: GoogleFonts.outfit(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                    letterSpacing: -0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(
+                      Ionicons.calendar_outline,
+                      size: 14,
+                      color: subtleTextColor.withOpacity(0.7),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      formattedDateTime,
+                      style: GoogleFonts.inter(
+                        color: subtleTextColor.withOpacity(0.7),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.15),
-                    blurRadius: 8,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(2), // Border width
-              child: CircleAvatar(
-                radius: 28,
-                backgroundColor: isDark ? Colors.grey[800] : Colors.white,
-                // Use ClipRRect to ensure the image is clipped to the circle
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
-                  child: Image.network(
-                    profilePicUrl ??
-                        defaultProfilePicUrl, // Use default if null
-                    width: 56,
-                    height: 56,
-                    fit: BoxFit.cover,
-                    // Add error builder for network image
-                    errorBuilder: (context, error, stackTrace) {
-                      // Fallback to initials if the default image also fails
-                      final initials = name.isNotEmpty
-                          ? name[0].toUpperCase()
-                          : '?';
-                      return Center(
-                        child: Text(
-                          initials,
-                          style: GoogleFonts.outfit(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                            color: primaryColor,
-                          ),
-                        ),
-                      );
-                    },
-                    // Optional: Add loading builder
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.0,
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+              ],
             ),
-            const SizedBox(width: 16),
+          ),
 
-            // Welcome Text Column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome Back,',
-                    style: GoogleFonts.outfit(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: subtleTextColor,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    name,
-                    style: GoogleFonts.outfit(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
-                      letterSpacing: -0.5,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6), // Add spacing before date/time
-                  // Display formatted date and time
-                  Text(
-                    formattedDateTime,
-                    style: GoogleFonts.outfit(
-                      color: subtleTextColor.withOpacity(0.8), // Slightly faded
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
+          // Notification Icon with Badge
+          Container(
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.grey[800]!.withOpacity(0.5)
+                  : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
             ),
-
-            // Notification Icon with Badge
-            Stack(
+            child: Stack(
               clipBehavior: Clip.none,
               children: [
                 IconButton(
                   icon: Icon(
                     Ionicons.notifications_outline,
                     color: subtleTextColor,
-                    size: 24,
+                    size: 22,
                   ),
                   onPressed: () {},
                 ),
                 Positioned(
-                  right: 8,
-                  top: 8,
+                  right: 10,
+                  top: 10,
                   child: Container(
-                    width: 12,
-                    height: 12,
+                    width: 10,
+                    height: 10,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.error,
+                      color: const Color(0xFFFF5252),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: theme.scaffoldBackgroundColor,
+                        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                         width: 2,
                       ),
                     ),
@@ -460,9 +478,9 @@ class _UserDashboardViewState extends State<UserDashboardView> {
                 ),
               ],
             ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -1282,58 +1300,64 @@ class _UserDashboardState extends State<UserDashboard> {
       value: systemUiOverlayStyle,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(
-          // Use theme background color instead of hardcoded white
-          backgroundColor: isDark
-              ? theme.scaffoldBackgroundColor
-              : Colors.white,
-          // Use theme text color for contrast
-          foregroundColor: isDark ? Colors.white : Colors.black87,
-          elevation: isDark
-              ? 0
-              : 0.5, // Less elevation in dark mode for a flat look
-          shadowColor: Colors.black.withOpacity(isDark ? 0.0 : 0.05),
-          title: Text(
-            _getAppBarTitle(_selectedIndex),
-            style: GoogleFonts.outfit(
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-              color: isDark
-                  ? Colors.white
-                  : Colors.black87, // Theme-aware text color
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(70),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1A1A1A) : primaryMaterialColor,
+              boxShadow: [
+                BoxShadow(
+                  color: primaryMaterialColor.withOpacity(isDark ? 0.0 : 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          ),
-          centerTitle: true,
-          toolbarHeight: 65,
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Ionicons.menu_outline),
-              tooltip: 'Menu',
-              onPressed: () => Scaffold.of(context).openDrawer(),
-              color: isDark
-                  ? Colors.white
-                  : Colors.black87, // Theme-aware icon color
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Ionicons.log_out_outline),
-              tooltip: 'Logout',
-              onPressed: () {
-                _logout(context);
-              },
-              color: isDark
-                  ? Colors.white
-                  : Colors.black87, // Theme-aware icon color
-            ),
-            const SizedBox(width: 12),
-          ],
-          // Theme-aware bottom border
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(1.0),
-            child: Container(
-              color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-              height: isDark ? 0.5 : 1.0, // Thinner line in dark mode
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  children: [
+                    // Menu Button
+                    Builder(
+                      builder: (context) => IconButton(
+                        icon: Icon(
+                          Ionicons.menu_outline,
+                          color: isDark ? Colors.white : Colors.white,
+                          size: 26,
+                        ),
+                        tooltip: 'Menu',
+                        onPressed: () => Scaffold.of(context).openDrawer(),
+                      ),
+                    ),
+
+                    // Centered Title
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          _getAppBarTitle(_selectedIndex),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 20,
+                            color: isDark ? Colors.white : Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Logout Button
+                    IconButton(
+                      icon: Icon(
+                        Ionicons.log_out_outline,
+                        color: isDark ? Colors.white : Colors.white,
+                        size: 24,
+                      ),
+                      tooltip: 'Logout',
+                      onPressed: () => _logout(context),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -1440,18 +1464,18 @@ class _UserDashboardState extends State<UserDashboard> {
             onTap: () => _onSelectItem(2),
           ),
           Divider(color: theme.dividerColor),
-          _buildDrawerItem(
-            icon: Ionicons.finger_print_outline,
-            text: 'Face Recognition',
-            selected: false,
-            selectedColor: headerColor,
-            defaultIconColor: drawerIconColor,
-            defaultTextColor: drawerTextColor,
-            onTap: () {
-              Navigator.pop(context);
-              // TODO: Navigate to face recognition enrollment
-            },
-          ),
+          // _buildDrawerItem(
+          //   icon: Ionicons.finger_print_outline,
+          //   text: 'Face Recognition',
+          //   selected: false,
+          //   selectedColor: headerColor,
+          //   defaultIconColor: drawerIconColor,
+          //   defaultTextColor: drawerTextColor,
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     // TODO: Navigate to face recognition enrollment
+          //   },
+          // ),
           _buildDrawerItem(
             icon: Ionicons.settings_outline,
             text: 'Settings',
@@ -1530,51 +1554,56 @@ class _UserDashboardState extends State<UserDashboard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Color.fromARGB(255, 25, 25, 30) : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-            width: 0.5,
-          ),
-        ),
-      ),
-      height: 70, // Increased height to accommodate labels
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavBarIconButton(
-            icon: Ionicons.home_outline,
-            activeIcon: Ionicons.home,
-            label: 'Home',
-            isSelected: _selectedIndex == 0,
-            activeColor: activeColor,
-            onTap: () => setState(() => _selectedIndex = 0),
-          ),
-          _buildNavBarIconButton(
-            icon: Ionicons.list_outline,
-            activeIcon: Ionicons.list,
-            label: 'Logs',
-            isSelected: _selectedIndex == 1,
-            activeColor: activeColor,
-            onTap: () => setState(() => _selectedIndex = 1),
-          ),
-          _buildNavBarIconButton(
-            icon: Ionicons.notifications_outline,
-            activeIcon: Ionicons.notifications,
-            label: 'Notifications',
-            isSelected: _selectedIndex == 2,
-            activeColor: activeColor,
-            onTap: () => setState(() => _selectedIndex = 2),
-          ),
-          _buildNavBarIconButton(
-            icon: Ionicons.settings_outline,
-            activeIcon: Ionicons.settings,
-            label: 'Settings',
-            isSelected: _selectedIndex == 3,
-            activeColor: activeColor,
-            onTap: () => setState(() => _selectedIndex = 3),
+        color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
           ),
         ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavBarIconButton(
+                icon: Ionicons.home_outline,
+                activeIcon: Ionicons.home,
+                label: 'Home',
+                isSelected: _selectedIndex == 0,
+                activeColor: activeColor,
+                onTap: () => setState(() => _selectedIndex = 0),
+              ),
+              _buildNavBarIconButton(
+                icon: Ionicons.list_outline,
+                activeIcon: Ionicons.list,
+                label: 'Logs',
+                isSelected: _selectedIndex == 1,
+                activeColor: activeColor,
+                onTap: () => setState(() => _selectedIndex = 1),
+              ),
+              _buildNavBarIconButton(
+                icon: Ionicons.notifications_outline,
+                activeIcon: Ionicons.notifications,
+                label: 'Notifications',
+                isSelected: _selectedIndex == 2,
+                activeColor: activeColor,
+                onTap: () => setState(() => _selectedIndex = 2),
+              ),
+              _buildNavBarIconButton(
+                icon: Ionicons.settings_outline,
+                activeIcon: Ionicons.settings,
+                label: 'Settings',
+                isSelected: _selectedIndex == 3,
+                activeColor: activeColor,
+                onTap: () => setState(() => _selectedIndex = 3),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1590,40 +1619,41 @@ class _UserDashboardState extends State<UserDashboard> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final Color textColor = isSelected
-        ? activeColor
-        : (isDark ? Colors.grey.shade500 : Colors.grey.shade600);
+    final Color inactiveColor = isDark ? Colors.grey[500]! : Colors.grey[400]!;
+    final Color textColor = isSelected ? activeColor : inactiveColor;
 
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16 : 12,
+          vertical: 8,
+        ),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: activeColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              )
+            : null,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(isSelected ? activeIcon : icon, color: textColor, size: 24),
+            Icon(
+              isSelected ? activeIcon : icon,
+              color: textColor,
+              size: isSelected ? 26 : 24,
+            ),
             const SizedBox(height: 4),
-            // Add the label text
             Text(
               label,
-              style: GoogleFonts.outfit(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color: textColor,
               ),
             ),
-            // Only show indicator dot for selected item if we have labels
-            if (isSelected)
-              Container(
-                margin: const EdgeInsets.only(top: 3),
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: activeColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
           ],
         ),
       ),

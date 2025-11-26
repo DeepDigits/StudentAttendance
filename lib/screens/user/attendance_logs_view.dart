@@ -321,15 +321,15 @@ class _AttendanceLogsViewState extends State<AttendanceLogsView> {
     IconData statusIcon;
     switch (status) {
       case 'Present':
-        statusColor = Colors.green;
+        statusColor = const Color(0xFF4CAF50);
         statusIcon = Ionicons.checkmark_circle;
         break;
       case 'Absent':
-        statusColor = Colors.red;
+        statusColor = const Color(0xFFE53935);
         statusIcon = Ionicons.close_circle;
         break;
       case 'Late':
-        statusColor = Colors.orange;
+        statusColor = const Color(0xFFFF9800);
         statusIcon = Ionicons.time;
         break;
       default:
@@ -337,130 +337,213 @@ class _AttendanceLogsViewState extends State<AttendanceLogsView> {
         statusIcon = Ionicons.help_circle;
     }
 
-    return Card(
-      margin: EdgeInsets.only(bottom: 12),
-      elevation: isDark ? 2 : 1,
-      color: isDark ? Color(0xFF131313) : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isDark ? Color(0xFF2A2A2A) : Colors.grey.shade200,
-          width: 1,
-        ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.15 : 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Row
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(statusIcon, color: statusColor, size: 24),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        subject,
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: textColor,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        DateFormat('EEEE, MMM d, yyyy').format(date),
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: subtleTextColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: statusColor.withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    status,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: statusColor,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 12),
-            Divider(
-              height: 1,
-              color: isDark ? Color(0xFF2A2A2A) : Colors.grey.shade200,
-            ),
-            SizedBox(height: 12),
-            // Details Row
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDetailItem(
-                    Ionicons.enter_outline,
-                    'Check In',
-                    checkIn,
-                    textColor,
-                    subtleTextColor,
-                  ),
-                ),
-                Expanded(
-                  child: _buildDetailItem(
-                    Ionicons.exit_outline,
-                    'Check Out',
-                    checkOut,
-                    textColor,
-                    subtleTextColor,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 12),
-            // Faculty display removed by user request
-            if (confidence > 0) ...[
-              SizedBox(height: 8),
-              Row(
+            // Header Section with colored left border
+            Container(
+              decoration: BoxDecoration(
+                border: Border(left: BorderSide(color: statusColor, width: 4)),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Row(
                 children: [
-                  Icon(
-                    Ionicons.finger_print_outline,
-                    size: 16,
-                    color: primaryColor,
+                  // Status Icon
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(statusIcon, color: statusColor, size: 24),
                   ),
-                  SizedBox(width: 6),
-                  Text(
-                    'Recognition Confidence: ${confidence.toStringAsFixed(1)}%',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: primaryColor,
-                      fontWeight: FontWeight.w500,
+                  const SizedBox(width: 14),
+                  // Subject & Date
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          subject,
+                          style: GoogleFonts.outfit(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          DateFormat('EEEE, MMM d, yyyy').format(date),
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: subtleTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Status Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      status,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: statusColor,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ],
+            ),
+
+            // Check In/Out Section
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Row(
+                children: [
+                  // Check In
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.grey[850] : Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Ionicons.enter_outline,
+                            size: 18,
+                            color: subtleTextColor,
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Check In',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: subtleTextColor,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                checkIn,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: textColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Check Out
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.grey[850] : Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Ionicons.exit_outline,
+                            size: 18,
+                            color: subtleTextColor,
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Check Out',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: subtleTextColor,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                checkOut,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: textColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Recognition Confidence
+            if (confidence > 0)
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Ionicons.finger_print_outline,
+                      size: 16,
+                      color: primaryColor,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Recognition Confidence: ${confidence.toStringAsFixed(1)}%',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: primaryColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
