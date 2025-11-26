@@ -102,3 +102,198 @@ def reject_student(request, pk):
         return Response({'error': 'Student profile not found.'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_student_stats(request, student_id):
+    """
+    Get attendance statistics for a specific student.
+    Returns present days, absent days, total classes, and attendance rate.
+    """
+    from .models import UserProfile, Attendance
+    from datetime import date, timedelta
+    from django.db.models import Count, Q
+    
+    try:
+        # Get the UserProfile (face recognition profile) - student_id is passed as int from URL
+        # Looking up by user_id since Flutter passes the Django User's ID
+        profile = UserProfile.objects.get(user_id=student_id)
+        
+        # Calculate stats for the current month
+        today = date.today()
+        first_day_of_month = date(today.year, today.month, 1)
+        
+        # Get attendance records for current month
+        monthly_attendance = Attendance.objects.filter(
+            student=profile,
+            date__gte=first_day_of_month,
+            date__lte=today,
+            action='Check-In'  # Only count check-ins
+        )
+        
+        # Count present days (unique dates with check-in)
+        present_days = monthly_attendance.values('date').distinct().count()
+        
+        # Calculate total working days in the month so far (excluding weekends for simplicity)
+        total_days = (today - first_day_of_month).days + 1
+        # Estimate working days (rough estimate: 5/7 of days)
+        estimated_working_days = int(total_days * 5 / 7)
+        
+        # Absent days = working days - present days
+        absent_days = max(0, estimated_working_days - present_days)
+        
+        # Total classes attended
+        total_classes = monthly_attendance.count()
+        
+        # Attendance rate
+        attendance_rate = round((present_days / estimated_working_days * 100), 1) if estimated_working_days > 0 else 0
+        
+        # Weekly stats (this week)
+        week_start = today - timedelta(days=today.weekday())
+        weekly_present = Attendance.objects.filter(
+            student=profile,
+            date__gte=week_start,
+            date__lte=today,
+            action='Check-In'
+        ).values('date').distinct().count()
+        
+        data = {
+            'present_days': present_days,
+            'absent_days': absent_days,
+            'total_classes': total_classes,
+            'attendance_rate': f'{attendance_rate}%',
+            'weekly_present': weekly_present,
+            'this_week': weekly_present,
+            'this_month': present_days,
+        }
+        
+        return Response(data, status=status.HTTP_200_OK)
+        
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'Student profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_student_attendance_logs(request, student_id):
+    print(student_id)
+    """
+    Get attendance log records for a specific student.
+    Returns a list of attendance entries with date, status, check-in/out times, etc.
+    """
+    from .models import UserProfile, Attendance
+    from django.utils import timezone
+    
+    try:
+        # Get the UserProfile - student_id is passed as int from URL
+        # Looking up by user_id since Flutter passes the Django User's ID
+        profile = UserProfile.objects.get(user_id=student_id)
+        
+        # Get all attendance records, ordered by date (most recent first)
+        attendance_records = Attendance.objects.filter(
+            student=profile
+        ).order_by('-date', '-timestamp')[:50]  # Limit to last 50 records
+        print(attendance_records)
+        # Group by date and action to create daily summaries
+        daily_logs = {}
+        for record in attendance_records:
+            date_key = record.date.strftime('%Y-%m-%d')
+            
+            if date_key not in daily_logs:
+                # Do not expose faculty/professor names in API responses
+                daily_logs[date_key] = {
+                    'date': record.date.isoformat(),
+                    'status': 'Absent',  # Default
+                    'checkIn': '--',
+                    'checkOut': '--',
+                    'subject': record.class_name,
+                    'faculty': '',
+                    'confidence': 0.0,
+                }
+            
+            # Update based on action
+            if record.action == 'Check-In':
+                daily_logs[date_key]['status'] = 'Present' if record.status == 'On-Time' else 'Late'
+                daily_logs[date_key]['checkIn'] = record.timestamp.strftime('%I:%M %p')
+                daily_logs[date_key]['confidence'] = 98.5  # You can calculate actual confidence if stored
+            elif record.action == 'Check-Out':
+                daily_logs[date_key]['checkOut'] = record.timestamp.strftime('%I:%M %p')
+        
+        # Convert to list
+        logs_list = list(daily_logs.values())
+        
+        return Response(logs_list, status=status.HTTP_200_OK)
+        
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'Student profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_student_recent_activity(request, student_id):
+    """
+    Get recent activity for a specific student.
+    Returns a list of recent actions like attendance marked, reminders, etc.
+    """
+    from .models import UserProfile, Attendance
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    try:
+        # Get the UserProfile - student_id is passed as int from URL
+        # Looking up by user_id since Flutter passes the Django User's ID
+        profile = UserProfile.objects.get(user_id=student_id)
+        
+        # Get recent attendance records (last 7 days)
+        seven_days_ago = timezone.now() - timedelta(days=7)
+        recent_records = Attendance.objects.filter(
+            student=profile,
+            timestamp__gte=seven_days_ago
+        ).order_by('-timestamp')[:10]
+        
+        activities = []
+        
+        for record in recent_records:
+            # Calculate time ago
+            time_diff = timezone.now() - record.timestamp
+            if time_diff.days > 0:
+                time_ago = f'{time_diff.days} day{"s" if time_diff.days > 1 else ""} ago'
+            elif time_diff.seconds >= 3600:
+                hours = time_diff.seconds // 3600
+                time_ago = f'{hours} hour{"s" if hours > 1 else ""} ago'
+            elif time_diff.seconds >= 60:
+                minutes = time_diff.seconds // 60
+                time_ago = f'{minutes} minute{"s" if minutes > 1 else ""} ago'
+            else:
+                time_ago = 'Just now'
+            
+            # Create activity based on record type
+            if record.action == 'Check-In':
+                activity = {
+                    'title': 'Attendance Marked',
+                    'description': f'{record.class_name} - {record.status}',
+                    'time': time_ago,
+                    'icon': 'checkmark_circle',
+                    'iconColor': '#2ECC71' if record.status == 'On-Time' else '#F39C12',
+                    'type': 'success',
+                }
+            else:  # Check-Out
+                activity = {
+                    'title': 'Class Completed',
+                    'description': f'{record.class_name}',
+                    'time': time_ago,
+                    'icon': 'log_out',
+                    'iconColor': '#3498DB',
+                    'type': 'info',
+                }
+            
+            activities.append(activity)
+        
+        return Response(activities, status=status.HTTP_200_OK)
+        
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'Student profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

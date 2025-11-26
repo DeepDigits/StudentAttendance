@@ -17,7 +17,7 @@ Including another URLconf
 from api import views
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from django.conf.urls.static import static
 # Import the new view along with existing ones
 from api.views import (
@@ -116,6 +116,7 @@ from api import faculty_views
 
 # Import student views
 from api import student_views
+from api import notification_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -173,6 +174,20 @@ urlpatterns = [
     path('api/faculty/reject/<int:pk>/', faculty_views.reject_faculty, name='reject_faculty'),
     
     # Student URLs
+    # Student attendance data endpoints (MUST come before approve/reject patterns to avoid conflicts)
+    path('api/student-stats/<int:student_id>/', student_views.get_student_stats, name='get_student_stats'),
+    path('api/student-logs/<int:student_id>/', student_views.get_student_attendance_logs, name='get_student_attendance_logs'),
+    path('api/student-activity/<int:student_id>/', student_views.get_student_recent_activity, name='get_student_recent_activity'),
+    
+    # Notification URLs
+    path('api/notifications/<int:user_id>/', notification_views.get_user_notifications, name='get_user_notifications'),
+    path('api/notifications/unread-count/<int:user_id>/', notification_views.get_unread_count, name='get_unread_count'),
+    path('api/notifications/mark-read/<int:notification_id>/', notification_views.mark_notification_read, name='mark_notification_read'),
+    path('api/notifications/mark-all-read/<int:user_id>/', notification_views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('api/notifications/delete/<int:notification_id>/', notification_views.delete_notification, name='delete_notification'),
+    path('api/notifications/create-reminder/<int:user_id>/', notification_views.create_class_reminder, name='create_class_reminder'),
+    
+    # Other student endpoints
     path('api/students/pending/', student_views.pending_students_list, name='pending_students_list'),
     path('api/students/approved/', student_views.approved_students_list, name='approved_students_list'),
     path('api/students/approve/<int:pk>/', student_views.approve_student, name='approve_student'),

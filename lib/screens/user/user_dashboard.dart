@@ -54,8 +54,62 @@ class _UserDashboardViewState extends State<UserDashboardView> {
   }
 
   Future<List<Map<String, dynamic>>> _fetchUserStats() async {
-    // Always use local default stats for attendance tracking
-    return _getDefaultStats();
+    if (widget.userId == null) {
+      print('User ID is null, returning default stats');
+      return _getDefaultStats();
+    }
+
+    try {
+      print('Fetching stats for student: ${widget.userId}');
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/api/student-stats/${widget.userId}/'),
+        headers: {'Accept': 'application/json'},
+      );
+
+      print('Stats API Response Status: ${response.statusCode}');
+      print('Stats API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> statsData = json.decode(response.body);
+
+        return [
+          {
+            'title': 'Present Days',
+            'count': statsData['this_month']?.toString() ?? '0',
+            'icon': Ionicons.checkmark_circle_outline,
+            'color': '#2ECC71',
+            'growth': '+${statsData['this_week']?.toString() ?? '0'}',
+          },
+          {
+            'title': 'Absent Days',
+            'count': statsData['absent_days']?.toString() ?? '0',
+            'icon': Ionicons.close_circle_outline,
+            'color': '#E74C3C',
+            'growth': '--',
+          },
+          {
+            'title': 'Total Classes',
+            'count': statsData['total_classes']?.toString() ?? '0',
+            'icon': Ionicons.calendar_outline,
+            'color': '#4A6FE6',
+            'growth': '+${statsData['weekly_present']?.toString() ?? '0'}',
+          },
+          {
+            'title': 'Attendance Rate',
+            'count': statsData['attendance_rate']?.toString() ?? '0%',
+            'icon': Ionicons.trending_up_outline,
+            'color': '#9B59B6',
+            'growth': 'This Month',
+          },
+        ];
+      } else {
+        print('Failed to fetch stats: ${response.statusCode}');
+        return _getDefaultStats();
+      }
+    } catch (e) {
+      print('Error fetching user stats: $e');
+      return _getDefaultStats();
+    }
   }
 
   Future<List<Map<String, dynamic>>> _fetchUserPostedJobs() async {
@@ -694,17 +748,145 @@ class _UserDashboardViewState extends State<UserDashboardView> {
           ),
         ),
         const SizedBox(height: 16),
-        _buildRecentActivityList(theme, isDark),
+        _buildRecentActivityListFromAPI(theme, isDark),
       ],
     );
   }
 
-  Widget _buildRecentActivityList(ThemeData theme, bool isDark) {
-    // Dummy recent activity data
-    final List<Map<String, dynamic>> activities = [
+  Widget _buildRecentActivityListFromAPI(ThemeData theme, bool isDark) {
+    if (widget.userId == null) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            'No recent activity',
+            style: GoogleFonts.outfit(color: theme.textTheme.bodySmall?.color),
+          ),
+        ),
+      );
+    }
+
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _fetchRecentActivity(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 30.0),
+              child: SpinKitFadingCircle(color: Colors.grey, size: 30.0),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                'Error loading activity',
+                style: GoogleFonts.outfit(color: Colors.red),
+              ),
+            ),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                children: [
+                  Icon(
+                    Ionicons.calendar_outline,
+                    size: 48,
+                    color: theme.textTheme.bodySmall?.color,
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'No recent activity',
+                    style: GoogleFonts.outfit(
+                      color: theme.textTheme.bodySmall?.color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final activities = snapshot.data!;
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: activities.length,
+          itemBuilder: (context, index) {
+            final activity = activities[index];
+            return _buildActivityCard(activity, theme, isDark);
+          },
+        );
+      },
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchRecentActivity() async {
+    if (widget.userId == null) return _getDefaultRecentActivity();
+
+    try {
+      print('Fetching recent activity for student: ${widget.userId}');
+      final response = await http
+          .get(
+            Uri.parse(
+              '${ApiConfig.baseUrl}/api/student-activity/${widget.userId}/',
+            ),
+            headers: {'Accept': 'application/json'},
+          )
+          .timeout(Duration(seconds: 5));
+
+      print('Activity API Response Status: ${response.statusCode}');
+      print('Activity API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> activityData = json.decode(response.body);
+
+        return activityData.map((activity) {
+          // Map icon names from backend to Ionicons
+          IconData iconData;
+          switch (activity['icon']) {
+            case 'checkmark_circle':
+              iconData = Ionicons.checkmark_circle;
+              break;
+            case 'log_out':
+              iconData = Ionicons.log_out;
+              break;
+            case 'time':
+              iconData = Ionicons.time;
+              break;
+            default:
+              iconData = Ionicons.information_circle;
+          }
+
+          return {
+            'title': activity['title'] ?? '',
+            'description': activity['description'] ?? '',
+            'time': activity['time'] ?? '',
+            'icon': iconData,
+            'iconColor': activity['iconColor'] ?? '#4A6FE6',
+            'type': activity['type'] ?? 'info',
+          };
+        }).toList();
+      } else {
+        print(
+          'Failed to fetch recent activity: ${response.statusCode}, using default',
+        );
+        return _getDefaultRecentActivity();
+      }
+    } catch (e) {
+      print('Error fetching recent activity: $e');
+      return _getDefaultRecentActivity();
+    }
+  }
+
+  List<Map<String, dynamic>> _getDefaultRecentActivity() {
+    return [
       {
         'title': 'Attendance Marked',
-        'description': 'Computer Science - Dr. Sarah Johnson',
+        'description': 'Computer Science',
         'time': '2 hours ago',
         'icon': Ionicons.checkmark_circle,
         'iconColor': '#2ECC71',
@@ -734,25 +916,7 @@ class _UserDashboardViewState extends State<UserDashboardView> {
         'iconColor': '#F39C12',
         'type': 'report',
       },
-      {
-        'title': 'Perfect Attendance Streak',
-        'description': '7 days in a row',
-        'time': '3 days ago',
-        'icon': Ionicons.trophy,
-        'iconColor': '#E67E22',
-        'type': 'achievement',
-      },
     ];
-
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: activities.length,
-      itemBuilder: (context, index) {
-        final activity = activities[index];
-        return _buildActivityCard(activity, theme, isDark);
-      },
-    );
   }
 
   Widget _buildActivityCard(

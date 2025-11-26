@@ -43,7 +43,9 @@ flutter {
     source = "../.."
 }
 
-// Add explicit dependency for ProGuard annotations so R8 can resolve proguard.annotation.Keep
 dependencies {
-    implementation("com.guardsquare:proguard-annotations:7.4.1")
+    // Exclude proguard-annotations from razorpay-core to avoid duplicate class errors
+    implementation("com.razorpay:core:1.0.1") {
+        exclude(group = "com.guardsquare", module = "proguard-annotations")
+    }
 }

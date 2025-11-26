@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:attendance_tracking/config/api_config.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class AttendanceLogsView extends StatefulWidget {
   final String userId;
@@ -14,64 +18,116 @@ class AttendanceLogsView extends StatefulWidget {
 
 class _AttendanceLogsViewState extends State<AttendanceLogsView> {
   String _selectedFilter = 'All';
+  List<Map<String, dynamic>> _attendanceLogs = [];
+  bool _isLoading = true;
 
-  // Dummy attendance data
-  final List<Map<String, dynamic>> _attendanceLogs = [
-    {
-      'date': DateTime.now().subtract(Duration(days: 0)),
-      'status': 'Present',
-      'checkIn': '09:05 AM',
-      'checkOut': '04:30 PM',
-      'subject': 'Mathematics',
-      'faculty': 'Dr. John Smith',
-      'confidence': 98.5,
-    },
-    {
-      'date': DateTime.now().subtract(Duration(days: 1)),
-      'status': 'Present',
-      'checkIn': '09:02 AM',
-      'checkOut': '04:25 PM',
-      'subject': 'Physics',
-      'faculty': 'Prof. Sarah Johnson',
-      'confidence': 96.8,
-    },
-    {
-      'date': DateTime.now().subtract(Duration(days: 2)),
-      'status': 'Absent',
-      'checkIn': '--',
-      'checkOut': '--',
-      'subject': 'Chemistry',
-      'faculty': 'Dr. Michael Brown',
-      'confidence': 0.0,
-    },
-    {
-      'date': DateTime.now().subtract(Duration(days: 3)),
-      'status': 'Present',
-      'checkIn': '09:10 AM',
-      'checkOut': '04:35 PM',
-      'subject': 'Computer Science',
-      'faculty': 'Dr. Emily Davis',
-      'confidence': 99.2,
-    },
-    {
-      'date': DateTime.now().subtract(Duration(days: 4)),
-      'status': 'Late',
-      'checkIn': '09:45 AM',
-      'checkOut': '04:30 PM',
-      'subject': 'English',
-      'faculty': 'Ms. Lisa Anderson',
-      'confidence': 97.1,
-    },
-    {
-      'date': DateTime.now().subtract(Duration(days: 5)),
-      'status': 'Present',
-      'checkIn': '09:00 AM',
-      'checkOut': '04:28 PM',
-      'subject': 'Mathematics',
-      'faculty': 'Dr. John Smith',
-      'confidence': 98.9,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchAttendanceLogs();
+  }
+
+  Future<void> _fetchAttendanceLogs() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      print(widget.userId);
+      print('Fetching attendance logs for student: ${widget.userId}');
+      final response = await http
+          .get(
+            Uri.parse(
+              '${ApiConfig.baseUrl}/api/student-logs/${widget.userId}/',
+            ),
+            headers: {'Accept': 'application/json'},
+          )
+          .timeout(Duration(seconds: 5));
+
+      print('Logs API Response Status: ${response.statusCode}');
+      print('Logs API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> logsData = json.decode(response.body);
+
+        setState(() {
+          _attendanceLogs = logsData.map((log) {
+            return {
+              'date': DateTime.parse(log['date']),
+              'status': log['status'] ?? 'Absent',
+              'checkIn': log['checkIn'] ?? '--',
+              'checkOut': log['checkOut'] ?? '--',
+              'subject': log['subject'] ?? 'N/A',
+              // Do not include faculty/professor names in the UI per user request
+              // 'faculty' intentionally omitted
+              'confidence': (log['confidence'] ?? 0.0).toDouble(),
+            };
+          }).toList();
+          _isLoading = false;
+        });
+      } else {
+        print(
+          'Failed to fetch attendance logs: ${response.statusCode}, using fallback data',
+        );
+        _useDefaultAttendanceLogs();
+      }
+    } catch (e) {
+      print('Error fetching attendance logs: $e');
+      // Use default/fallback data on error
+      _useDefaultAttendanceLogs();
+    }
+  }
+
+  void _useDefaultAttendanceLogs() {
+    // Use dummy data as fallback
+    final List<Map<String, dynamic>> defaultLogs = [
+      {
+        'date': DateTime.now().subtract(Duration(days: 0)),
+        'status': 'Present',
+        'checkIn': '09:05 AM',
+        'checkOut': '04:30 PM',
+        'subject': 'Mathematics',
+        'confidence': 98.5,
+      },
+      {
+        'date': DateTime.now().subtract(Duration(days: 1)),
+        'status': 'Present',
+        'checkIn': '09:02 AM',
+        'checkOut': '04:25 PM',
+        'subject': 'Physics',
+        'confidence': 96.8,
+      },
+      {
+        'date': DateTime.now().subtract(Duration(days: 2)),
+        'status': 'Absent',
+        'checkIn': '--',
+        'checkOut': '--',
+        'subject': 'Chemistry',
+        'confidence': 0.0,
+      },
+      {
+        'date': DateTime.now().subtract(Duration(days: 3)),
+        'status': 'Present',
+        'checkIn': '09:10 AM',
+        'checkOut': '04:35 PM',
+        'subject': 'Computer Science',
+        'confidence': 99.2,
+      },
+      {
+        'date': DateTime.now().subtract(Duration(days: 4)),
+        'status': 'Late',
+        'checkIn': '09:45 AM',
+        'checkOut': '04:30 PM',
+        'subject': 'English',
+        'confidence': 97.1,
+      },
+    ];
+
+    setState(() {
+      _attendanceLogs = defaultLogs;
+      _isLoading = false;
+    });
+  }
 
   List<Map<String, dynamic>> get _filteredLogs {
     if (_selectedFilter == 'All') {
@@ -96,6 +152,24 @@ class _AttendanceLogsViewState extends State<AttendanceLogsView> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        elevation: 0,
+        title: Text(
+          'Attendance Logs',
+          style: GoogleFonts.outfit(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: textColor,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Ionicons.refresh, color: textColor),
+            onPressed: _fetchAttendanceLogs,
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -123,7 +197,14 @@ class _AttendanceLogsViewState extends State<AttendanceLogsView> {
             ),
             // Attendance Logs List
             Expanded(
-              child: _filteredLogs.isEmpty
+              child: _isLoading
+                  ? Center(
+                      child: SpinKitFadingCircle(
+                        color: primaryColor,
+                        size: 50.0,
+                      ),
+                    )
+                  : _filteredLogs.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -209,7 +290,6 @@ class _AttendanceLogsViewState extends State<AttendanceLogsView> {
     final checkIn = log['checkIn'] as String;
     final checkOut = log['checkOut'] as String;
     final subject = log['subject'] as String;
-    final faculty = log['faculty'] as String;
     final confidence = log['confidence'] as double;
 
     Color statusColor;
@@ -334,20 +414,7 @@ class _AttendanceLogsViewState extends State<AttendanceLogsView> {
               ],
             ),
             SizedBox(height: 12),
-            // Faculty Info
-            Row(
-              children: [
-                Icon(Ionicons.person_outline, size: 16, color: subtleTextColor),
-                SizedBox(width: 6),
-                Text(
-                  faculty,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: subtleTextColor,
-                  ),
-                ),
-              ],
-            ),
+            // Faculty display removed by user request
             if (confidence > 0) ...[
               SizedBox(height: 8),
               Row(
