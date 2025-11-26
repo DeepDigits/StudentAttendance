@@ -168,6 +168,10 @@ urlpatterns = [
     path('api/contractorRequests/<int:pk>/reject/', reject_contractor_request, name='reject_contractor_request'), # New
     
     # Faculty URLs
+    path('api/faculty/', faculty_views.get_all_faculty, name='get_all_faculty'),
+    path('api/faculty/<int:pk>/', faculty_views.get_faculty_detail, name='get_faculty_detail'),
+    path('api/faculty/<int:pk>/update/', faculty_views.update_faculty, name='update_faculty'),
+    path('api/faculty/<int:pk>/delete/', faculty_views.delete_faculty, name='delete_faculty'),
     path('api/faculty/pending/', faculty_views.pending_faculty_list, name='pending_faculty_list'),
     path('api/faculty/approved/', faculty_views.approved_faculty_list, name='approved_faculty_list'),
     path('api/faculty/approve/<int:pk>/', faculty_views.approve_faculty, name='approve_faculty'),
