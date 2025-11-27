@@ -55,6 +55,7 @@ dependencies:
   razorpay_flutter: ^1.4.0
   url_launcher: ^6.2.4  # For phone dialer functionality
   translator: ^1.0.0
+  fl_chart: ^0.69.0  # For charts
 
 dev_dependencies:
   flutter_test:
