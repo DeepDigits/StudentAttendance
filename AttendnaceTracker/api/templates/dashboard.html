@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>CampusTrack | Dashboard</title>
+	<title>AttendanceTrack | Dashboard</title>
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script src="https://unpkg.com/@material-tailwind/html@latest/scripts/ripple.js"></script>
 	<script>
@@ -743,7 +743,7 @@
 				<circle class="ring-bg" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
 				<circle class="ring" cx="25" cy="25" r="20" fill="none" stroke-width="4" stroke-linecap="round"></circle>
 			</svg>
-			<div class="loader-text">CampusTrack</div>
+			<div class="loader-text">AttendanceTrack</div>
 		</div>
 	</div>
 	<div class="flex min-h-screen">
@@ -754,7 +754,7 @@
 					<i class="fas fa-pie-chart text-lg"></i>
 				</div>
 				<div class="flex-1">
-					<p class="text-xs uppercase tracking-widest font-semibold text-slate-400 dark:text-slate-500">CampusTrack</p>
+					<p class="text-xs uppercase tracking-widest font-semibold text-slate-400 dark:text-slate-500">AttendanceTrack</p>
 					<h1 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Control Center</h1>
 				</div>
 			</div>
@@ -830,7 +830,7 @@
 						</button>
 						<div class="h-8 w-px bg-gradient-to-b from-slate-200/0 via-slate-300/50 to-slate-200/0 dark:via-slate-600/50"></div>
 						<div class="hidden md:flex flex-col">
-							<p class="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">CampusTrack</p>
+							<p class="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">AttendanceTrack</p>
 							<h1 class="text-sm font-bold text-slate-900 dark:text-white">Control Center</h1>
 						</div>
 					</div>
@@ -898,10 +898,13 @@
 								<div class="border-t border-slate-200/50 dark:border-slate-800/50"></div>
 								<!-- Logout -->
 								<div class="p-1.5">
-									<a href="/api/logout/" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors duration-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20 dark:hover:text-red-300">
+									<form id="logoutForm" method="POST" action="/logout/" style="display:none;">
+										{% csrf_token %}
+									</form>
+									<button type="button" onclick="handleLogout()" class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors duration-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20 dark:hover:text-red-300 border-none bg-transparent cursor-pointer">
 										<i class="fas fa-sign-out-alt w-4 text-center"></i>
 										Logout
-									</a>
+									</button>
 								</div>
 							</div>
 						</div>
@@ -4443,6 +4446,13 @@ document.head.appendChild(navbarRippleStyle);
 		initThemeButtons();
 	}
 	document.addEventListener('DOMContentLoaded', initThemeButtons);
+	
+	// Logout handler function
+	window.handleLogout = function() {
+		if (confirm('Are you sure you want to logout?')) {
+			document.getElementById('logoutForm').submit();
+		}
+	};
 })();
 </script>
 
