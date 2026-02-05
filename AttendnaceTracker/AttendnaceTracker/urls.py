@@ -35,6 +35,7 @@ from api.views import (
     assign_worker_to_job,
     delete_worker_profile,
     dashboard_activity,
+    dashboard_stats,
     # Import new worker job endpoints
     worker_jobs,
     worker_stats,
@@ -208,7 +209,7 @@ urlpatterns = [
     path('api/students/reject/<int:pk>/', student_views.reject_student, name='reject_student'),
     
     # Dashboard URL
-    # path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),  # New URL for dashboard statistics
+    path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),  # New URL for dashboard statistics
     path('api/dashboard/activity/', dashboard_activity, name='dashboard_activity'),  # New URL for dashboard activity
     # Job URLs
     path('api/contractors/list/', get_contractors, name='get_contractors'),    

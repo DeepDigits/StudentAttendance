@@ -956,112 +956,85 @@ def worker_stats(request, worker_id):
 @api_view(['GET'])
 def dashboard_activity(request):
     """
-    Returns recent activity/complaints for the admin dashboard
-    If no complaints exist, returns dummy data
+    Returns recent activity for the admin dashboard from various sources
+    including student registrations, faculty registrations, and attendance
     """
     try:
-        from .models import Complaint
-        complaints = Complaint.objects.all().order_by('-created_at')[:5]
+        from datetime import datetime, timedelta
+        from django.utils import timezone
         
-        data = []
+        activities = []
         
-        if complaints.exists():
-            # Use real complaints if they exist
-            for complaint in complaints:
-                worker_name = f"{complaint.complainant_worker.user.first_name} {complaint.complainant_worker.user.last_name}".strip()
-                
-                data.append({
-                    'id': complaint.id,
-                    'title': complaint.title,
-                    'description': complaint.description,
-                    'status': complaint.status,
-                    'complaint_type': complaint.complaint_type,
-                    'created_at': complaint.created_at.isoformat() if complaint.created_at else None,
-                    'worker_name': worker_name,
-                })
-        else:
-            # Return dummy activity data
-            from datetime import datetime, timedelta
-            now = datetime.now()
-            
-            data = [
-                {
-                    'id': 1,
-                    'title': 'New Faculty Registration',
-                    'description': 'Dr. Akshay Kumar registered as faculty member',
-                    'status': 'Pending',
+        # Get recent student registrations (last 10)
+        try:
+            recent_students = StudentProfile.objects.select_related('user').order_by('-id')[:10]
+            for student in recent_students:
+                activities.append({
+                    'id': f'student_{student.id}',
+                    'title': 'New Student Registration',
+                    'description': f'{student.user.first_name} {student.user.last_name} registered in {student.department}',
+                    'status': student.approval_status,
                     'complaint_type': 'Registration',
-                    'created_at': (now - timedelta(hours=2)).isoformat(),
-                    'worker_name': 'Dr. Akshay Kumar',
-                },
-                {
-                    'id': 2,
-                    'title': 'Student Enrollment Request',
-                    'description': 'John Doe requested enrollment in Computer Science department',
-                    'status': 'Pending',
-                    'complaint_type': 'Enrollment',
-                    'created_at': (now - timedelta(hours=5)).isoformat(),
-                    'worker_name': 'John Doe',
-                },
-                {
-                    'id': 3,
-                    'title': 'Attendance Report Generated',
-                    'description': 'Monthly attendance report for September has been generated',
-                    'status': 'Completed',
-                    'complaint_type': 'Report',
-                    'created_at': (now - timedelta(hours=8)).isoformat(),
-                    'worker_name': 'System',
-                },
-                {
-                    'id': 4,
-                    'title': 'Faculty Approved',
-                    'description': 'Prof. Sarah Johnson has been approved for teaching',
-                    'status': 'Approved',
-                    'complaint_type': 'Approval',
-                    'created_at': (now - timedelta(days=1)).isoformat(),
-                    'worker_name': 'Prof. Sarah Johnson',
-                },
-                {
-                    'id': 5,
-                    'title': 'Attendance Alert',
-                    'description': 'Student attendance below 75% threshold',
-                    'status': 'Alert',
-                    'complaint_type': 'Attendance',
-                    'created_at': (now - timedelta(days=1, hours=3)).isoformat(),
-                    'worker_name': 'Jane Smith',
-                },
-            ]
+                    'created_at': student.user.date_joined.isoformat() if hasattr(student.user, 'date_joined') else timezone.now().isoformat(),
+                    'worker_name': f'{student.user.first_name} {student.user.last_name}',
+                })
+        except Exception as e:
+            print(f"Error fetching students: {e}")
         
-        return Response(data, status=status.HTTP_200_OK)
+        # Get recent faculty registrations (last 10)
+        try:
+            recent_faculty = FacultyProfile.objects.select_related('user').order_by('-id')[:10]
+            for faculty in recent_faculty:
+                activities.append({
+                    'id': f'faculty_{faculty.id}',
+                    'title': 'New Faculty Registration',
+                    'description': f'{faculty.user.first_name} {faculty.user.last_name} registered in {faculty.department} department',
+                    'status': faculty.approval_status,
+                    'complaint_type': 'Registration',
+                    'created_at': faculty.user.date_joined.isoformat() if hasattr(faculty.user, 'date_joined') else timezone.now().isoformat(),
+                    'worker_name': f'{faculty.user.first_name} {faculty.user.last_name}',
+                })
+        except Exception as e:
+            print(f"Error fetching faculty: {e}")
+        
+        # Get recent attendance records (last 10)
+        try:
+            from .models import Attendance
+            recent_attendance = Attendance.objects.select_related('student', 'student__user').order_by('-timestamp')[:10]
+            for att in recent_attendance:
+                student_name = f'{att.student.user.first_name} {att.student.user.last_name}' if att.student.user.first_name else att.student.student_id
+                activities.append({
+                    'id': f'attendance_{att.id}',
+                    'title': f'Attendance Recorded',
+                    'description': f'{student_name} - {att.action} for {att.class_name}',
+                    'status': att.status,
+                    'complaint_type': 'Attendance',
+                    'created_at': att.timestamp.isoformat(),
+                    'worker_name': student_name,
+                })
+        except Exception as e:
+            print(f"Error fetching attendance: {e}")
+        
+        # Sort all activities by created_at (most recent first)
+        activities.sort(key=lambda x: x['created_at'], reverse=True)
+        
+        # Return top 15 most recent activities
+        activities = activities[:15]
+        
+        # If no activities found, return empty list (not dummy data)
+        if not activities:
+            return Response([], status=status.HTTP_200_OK)
+        
+        return Response(activities, status=status.HTTP_200_OK)
         
     except Exception as e:
         print(f"Error fetching dashboard activity: {str(e)}")
-        # Return dummy data even on error
-        from datetime import datetime, timedelta
-        now = datetime.now()
-        
-        dummy_data = [
-            {
-                'id': 1,
-                'title': 'New Faculty Registration',
-                'description': 'Dr. Akshay Kumar registered as faculty member',
-                'status': 'Pending',
-                'complaint_type': 'Registration',
-                'created_at': (now - timedelta(hours=2)).isoformat(),
-                'worker_name': 'Dr. Akshay Kumar',
-            },
-            {
-                'id': 2,
-                'title': 'Student Enrollment Request',
-                'description': 'John Doe requested enrollment in Computer Science department',
-                'status': 'Pending',
-                'complaint_type': 'Enrollment',
-                'created_at': (now - timedelta(hours=5)).isoformat(),
-                'worker_name': 'John Doe',
-            },
-        ]
-        
-        return Response(dummy_data, status=status.HTTP_200_OK)
+        import traceback
+        traceback.print_exc()
+        return Response(
+            {'error': f'Failed to fetch dashboard activity: {str(e)}'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['GET'])

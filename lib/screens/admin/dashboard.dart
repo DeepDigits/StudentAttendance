@@ -31,9 +31,9 @@ class AdminDashboard extends StatefulWidget {
 class _AdminDashboardState extends State<AdminDashboard> {
   // Using more relevant stats for the system
   // Keep _statsData here as it might be needed by other parts or could be fetched here
-  // final String _baseApiUrl = 'http://10.0.2.2:8000/api';
-  final String _baseApiUrl =
-      'https://studenttrackingsystem.pythonanywhere.com/api';
+  final String _baseApiUrl = 'http://192.168.0.7:8000/api';
+  // final String _baseApiUrl =
+  //     'https://studenttrackingsystem.pythonanywhere.com/api';
   late Future<List<Map<String, dynamic>>> _statsFuture;
   late Future<List<Map<String, dynamic>>> _complaintsFuture; // Add this line
   late Future<Map<String, dynamic>>

@@ -185,7 +185,20 @@ def get_student_stats(request, student_id):
         return Response(data, status=status.HTTP_200_OK)
         
     except UserProfile.DoesNotExist:
-        return Response({'error': 'Student profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        # Student hasn't completed face scanning yet - return empty stats
+        data = {
+            'present_days': 0,
+            'absent_days': 0,
+            'total_classes': 0,
+            'attendance_rate': '0%',
+            'weekly_present': 0,
+            'weekly_absent': 0,
+            'weekly_classes': 0,
+            'this_week': 0,
+            'this_month': 0,
+            'message': 'Complete face scanning to start tracking attendance.'
+        }
+        return Response(data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -241,7 +254,8 @@ def get_student_attendance_logs(request, student_id):
         return Response(logs_list, status=status.HTTP_200_OK)
         
     except UserProfile.DoesNotExist:
-        return Response({'error': 'Student profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        # Student hasn't completed face scanning yet - return empty logs
+        return Response([], status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -309,7 +323,8 @@ def get_student_recent_activity(request, student_id):
         return Response(activities, status=status.HTTP_200_OK)
         
     except UserProfile.DoesNotExist:
-        return Response({'error': 'Student profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        # Student hasn't completed face scanning yet - return empty activity
+        return Response([], status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
