@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:attendance_tracking/config/api_config.dart';
 import 'package:attendance_tracking/utils/snackbar_utils.dart';
+import 'package:attendance_tracking/screens/face_scan_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
@@ -71,10 +72,28 @@ class _SignupPageState extends State<SignupPage> {
         if (!mounted) return;
 
         if (response.statusCode == 201) {
+          final data = json.decode(response.body);
+          final rollNumber = data['roll_number'] as String?;
+
           ToastUtils.showSuccessToast(
-            'Registration successful! Your account is pending approval.',
+            'Registration successful! Please scan your face for attendance system.',
           );
-          Navigator.pop(context); // Go back to login page
+
+          // Navigate to face scan screen
+          if (rollNumber != null && rollNumber.isNotEmpty) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FaceScanScreen(
+                  rollNumber: rollNumber,
+                  studentName:
+                      '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
+                ),
+              ),
+            );
+          } else {
+            Navigator.pop(context); // Go back to login page
+          }
         } else {
           final data = json.decode(response.body);
           ToastUtils.showErrorToast(data['error'] ?? 'Failed to register');

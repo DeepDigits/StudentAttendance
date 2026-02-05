@@ -19,7 +19,7 @@ from .face_recognition_views import (
     train_model, video_feed, start_attendance_camera,
     attendance_video_feed, attendance_status, stop_attendance_camera,
     dashboard_stats as face_dashboard_stats, crowd_report, unknown_faces,
-    student_dashboard, class_attendance_history
+    student_dashboard, class_attendance_history, upload_face_images
 )
 
 def get_csrf_token(request):
@@ -337,7 +337,11 @@ def register_student_api(request):
         )
 
         return Response(
-            {'message': 'Student registered successfully. Your account is pending approval.'}, 
+            {
+                'message': 'Student registered successfully. Your account is pending approval.',
+                'roll_number': roll_number,
+                'student_id': student.id
+            }, 
             status=status.HTTP_201_CREATED
         )
 

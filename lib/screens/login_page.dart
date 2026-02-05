@@ -300,21 +300,21 @@ class _LoginPageState extends State<LoginPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             // --- Student/Staff Option ---
-                            // _buildDialogOption(
-                            //   context: context,
-                            //   icon: Ionicons.person_outline,
-                            //   text: 'Register as Student',
-                            //   color: primaryColor,
-                            //   onTap: () {
-                            //     Navigator.pop(context);
-                            //     Navigator.push(
-                            //       context,
-                            //       MaterialPageRoute(
-                            //         builder: (context) => const SignupPage(),
-                            //       ),
-                            //     );
-                            //   },
-                            // ),
+                            _buildDialogOption(
+                              context: context,
+                              icon: Ionicons.person_outline,
+                              text: 'Register as Student',
+                              color: primaryColor,
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const SignupPage(),
+                                  ),
+                                );
+                              },
+                            ),
                             Divider(
                               height: 1,
                               indent: 20,
