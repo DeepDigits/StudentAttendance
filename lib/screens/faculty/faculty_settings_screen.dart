@@ -10,6 +10,8 @@ import 'package:attendance_tracking/config/api_config.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:attendance_tracking/screens/login_page.dart';
 import 'dart:io';
 
 class FacultySettingsScreen extends StatefulWidget {
@@ -675,12 +677,18 @@ class _FacultySettingsScreenState extends State<FacultySettingsScreen> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // Clear storage and navigate to login
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil('/login', (route) => false);
+              // Clear secure storage and navigate to login
+              const _storage = FlutterSecureStorage();
+              await _storage.deleteAll();
+
+              if (mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (Route<dynamic> route) => false,
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

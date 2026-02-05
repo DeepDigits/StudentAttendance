@@ -298,6 +298,101 @@ face_capture_status = {}
 face_capture_frames = {}
 
 
+@csrf_exempt
+def upload_face_images(request):
+    """
+    Upload face images from mobile app for training.
+    Expects multipart/form-data with:
+    - roll_number: Student's roll number
+    - images: Multiple image files
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST allowed'}, status=405)
+    
+    roll_number = request.POST.get('roll_number')
+    if not roll_number:
+        return JsonResponse({'error': 'Roll number is required'}, status=400)
+    
+    # Get uploaded images
+    images = request.FILES.getlist('images')
+    if not images:
+        return JsonResponse({'error': 'No images uploaded'}, status=400)
+    
+    # Create dataset directory
+    base_path = Path(__file__).resolve().parent.parent.parent / 'AttendanceSystem'
+    dataset_path = base_path / 'dataset' / roll_number
+    dataset_path.mkdir(parents=True, exist_ok=True)
+    
+    # Load face cascade for detection
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    
+    saved_count = 0
+    errors = []
+    
+    import numpy as np
+    
+    for i, img_file in enumerate(images):
+        try:
+            # Read image from uploaded file
+            file_bytes = np.frombuffer(img_file.read(), np.uint8)
+            img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+            
+            if img is None:
+                errors.append(f"Image {i+1}: Could not decode image")
+                continue
+            
+            # Convert to grayscale for face detection
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            
+            # Apply CLAHE for better face detection
+            clahe = cv2.createCLAHE(clipLimit=CLAHE_CLIP_LIMIT, tileGridSize=CLAHE_TILE_SIZE)
+            gray = clahe.apply(gray)
+            
+            # Detect faces
+            faces = face_cascade.detectMultiScale(
+                gray,
+                scaleFactor=FACE_DETECTION_SCALE_FACTOR,
+                minNeighbors=FACE_DETECTION_MIN_NEIGHBORS,
+                minSize=FACE_DETECTION_MIN_SIZE
+            )
+            
+            if len(faces) == 0:
+                errors.append(f"Image {i+1}: No face detected")
+                continue
+            
+            # Take the first (largest) face
+            x, y, w, h = faces[0]
+            face_img = img[y:y+h, x:x+w]
+            
+            # Normalize lighting
+            face_img_normalized = cv2.normalize(face_img, None, 0, 255, cv2.NORM_MINMAX)
+            
+            # Resize to standard size
+            face_img_resized = cv2.resize(face_img_normalized, (160, 160))
+            
+            # Save the face image
+            saved_count += 1
+            img_path = dataset_path / f"{saved_count}.jpg"
+            cv2.imwrite(str(img_path), face_img_resized)
+            
+        except Exception as e:
+            errors.append(f"Image {i+1}: {str(e)}")
+    
+    if saved_count == 0:
+        return JsonResponse({
+            'success': False,
+            'error': 'No valid face images could be saved',
+            'details': errors
+        }, status=400)
+    
+    return JsonResponse({
+        'success': True,
+        'message': f'Successfully saved {saved_count} face images',
+        'saved_count': saved_count,
+        'errors': errors if errors else None
+    })
+
+
 def face_capture_page(request):
     """Render the face capture page."""
     student_id = request.session.get('pending_face_capture')

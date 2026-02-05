@@ -35,6 +35,7 @@ from api.views import (
     assign_worker_to_job,
     delete_worker_profile,
     dashboard_activity,
+    dashboard_stats,
     # Import new worker job endpoints
     worker_jobs,
     worker_stats,
@@ -73,6 +74,7 @@ from api.views import (
     capture_status,
     stop_face_capture,
     train_model,
+    upload_face_images,
     video_feed,
     start_attendance_camera,
     attendance_video_feed,
@@ -135,6 +137,7 @@ urlpatterns = [
     path('api/stop-capture/', stop_face_capture, name='stop_capture'),
     path('api/capture-status/<str:student_id>/', capture_status, name='capture_status'),
     path('api/train-model/', train_model, name='train_model'),
+    path('api/upload-face-images/', upload_face_images, name='upload_face_images'),
     path('api/video-feed/<str:student_id>/', video_feed, name='video_feed'),
     path('api/attendance/start/', start_attendance_camera, name='start_attendance'),
     path('api/attendance/stop/', stop_attendance_camera, name='stop_attendance'),
@@ -206,7 +209,7 @@ urlpatterns = [
     path('api/students/reject/<int:pk>/', student_views.reject_student, name='reject_student'),
     
     # Dashboard URL
-    # path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),  # New URL for dashboard statistics
+    path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),  # New URL for dashboard statistics
     path('api/dashboard/activity/', dashboard_activity, name='dashboard_activity'),  # New URL for dashboard activity
     # Job URLs
     path('api/contractors/list/', get_contractors, name='get_contractors'),    
